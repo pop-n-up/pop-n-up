@@ -16,3 +16,8 @@ spring:
 logging:
   level:
     com.popnup: debug
+
+naver:
+  maps:
+    client-id: xuw6b5ypsr
+    client-secret: xYpDojd2SU54of2IboHi0fIRDOSr2J96LI9RKnYZ

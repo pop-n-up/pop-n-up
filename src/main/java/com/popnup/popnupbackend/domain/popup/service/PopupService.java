@@ -1,5 +1,6 @@
 package com.popnup.popnupbackend.domain.popup.service;
 
+import com.popnup.popnupbackend.domain.popup.dto.naver.NaverGeocodeResponse;
 import com.popnup.popnupbackend.domain.popup.dto.reponse.PopupListResponse;
 import com.popnup.popnupbackend.domain.popup.dto.reponse.PopupResponse;
 import com.popnup.popnupbackend.domain.popup.dto.request.PopupCreateRequest;
@@ -11,6 +12,7 @@ import com.popnup.popnupbackend.domain.popup.entity.PopupImage;
 import com.popnup.popnupbackend.domain.popup.exception.PopupNotFoundException;
 import com.popnup.popnupbackend.domain.popup.repository.PopupImageRepository;
 import com.popnup.popnupbackend.domain.popup.repository.PopupRepository;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +26,23 @@ public class PopupService {
 
   private final PopupRepository popupRepository;
   private final PopupImageRepository popupImageRepository;
+  private final NaverGeocodeService naverGeocodeService;
 
   @Transactional
   public PopupResponse createPopup(PopupCreateRequest request) {
+
+    BigDecimal latitude = request.getLatitude();
+    BigDecimal longitude = request.getLongitude();
+
+    if (request.getAddress() != null && !request.getAddress().isBlank()) {
+      NaverGeocodeResponse.AddressItem coordinate =
+          naverGeocodeService.getCoordinatesByAddress(request.getAddress());
+      if (coordinate != null) {
+        latitude = coordinate.getLatitude();
+        longitude = coordinate.getLongitude();
+      }
+    }
+
     Popup popup =
         Popup.builder()
             .title(request.getTitle())
@@ -34,8 +50,8 @@ public class PopupService {
             .category(request.getCategory())
             .region(request.getRegion())
             .address(request.getAddress())
-            .latitude(request.getLatitude())
-            .longitude(request.getLongitude())
+            .latitude(latitude)
+            .longitude(longitude)
             .startDate(request.getStartDate())
             .endDate(request.getEndDate())
             .isFree(request.getIsFree())
@@ -92,14 +108,26 @@ public class PopupService {
     Popup popup =
         popupRepository.findById(popupId).orElseThrow(() -> new PopupNotFoundException(popupId));
 
+    BigDecimal latitude = request.getLatitude();
+    BigDecimal longitude = request.getLongitude();
+
+    if (request.getAddress() != null && !request.getAddress().isBlank()) {
+      NaverGeocodeResponse.AddressItem coordinate =
+          naverGeocodeService.getCoordinatesByAddress(request.getAddress());
+      if (coordinate != null) {
+        latitude = coordinate.getLatitude();
+        longitude = coordinate.getLongitude();
+      }
+    }
+
     popup.update(
         request.getTitle(),
         request.getDescription(),
         request.getCategory(),
         request.getRegion(),
         request.getAddress(),
-        request.getLatitude(),
-        request.getLongitude(),
+        latitude,
+        longitude,
         request.getStartDate(),
         request.getEndDate(),
         request.getIsFree(),
