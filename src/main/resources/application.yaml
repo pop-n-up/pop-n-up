@@ -7,3 +7,9 @@ spring:
 
   jpa:
     open-in-view: false
+
+  # 네이버 지도 API 공통 설정 추가
+  naver:
+    maps:
+      client-id: xuw6b5ypsr
+      client-secret: xYpDojd2SU54of2IboHi0fIRDOSr2J96LI9RKnYZ
