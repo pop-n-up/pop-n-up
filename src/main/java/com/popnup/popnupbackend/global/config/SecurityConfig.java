@@ -71,6 +71,7 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
                     .anyRequest()
                     .authenticated())
+        .oauth2Login(oauth2 -> {})
         .addFilterBefore(jwtFilter, AnonymousAuthenticationFilter.class) // JwtFilter 등록
         .build();
   }
