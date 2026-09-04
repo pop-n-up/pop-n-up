@@ -66,6 +66,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/gatherings")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/health")
+                    .permitAll() // temp login
+                    .requestMatchers("/popups/**") // temp login
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin")
                     .hasRole("ADMIN")

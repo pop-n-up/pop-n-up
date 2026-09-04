@@ -12,7 +12,8 @@ spring:
   naver:
     maps:
       client-id: xuw6b5ypsr
-      client-secret: xYpDojd2SU54of2IboHi0fIRD0Sr2J96LI9RKnYZ
+      client-secret: xYpDojd2SU54of2lboHi0fIRDOSr2J96Ll9RKnYZ
 
-  jwt:
-    secret: ${JWT_SECRET}
+
+jwt:
+  secret: c29tZS1qd3Qtc2VjcmV0LWtleS1leGFtcGxlLWZvci1sb2NhbC10ZXN0aW5nLTIwMjY=
