@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
   private Provider provider;
 
   @Column(nullable = true)
-  private String privateId;
+  private String providerId;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
@@ -65,6 +65,19 @@ public class Member extends BaseEntity {
     member.password = password;
     member.name = name;
     member.provider = Provider.LOCAL;
+    member.role = Role.ROLE_USER;
+    member.status = MemberStatus.ACTIVE;
+
+    return member;
+  }
+
+  public static Member createOAuth2(String email, String name, String providerId) {
+    Member member = new Member();
+    member.email = email;
+    member.password = null;
+    member.name = name;
+    member.provider = Provider.KAKAO;
+    member.providerId = providerId;
     member.role = Role.ROLE_USER;
     member.status = MemberStatus.ACTIVE;
 

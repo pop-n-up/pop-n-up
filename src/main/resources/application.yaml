@@ -18,11 +18,14 @@ spring:
         registration:
           kakao:
             client-id:  ${SPRING__SECURITY__OAUTH2__CLIENT__REGISTRATION__KAKAO__CLIENT_ID}
+            client-secret: ${KAKAO__CLIENT__SECRET__KEY}
             authorization-grant-type: authorization_code
             scope:
               - profile_nickname
+              - account_email
             client-name: Kakao
             redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+            client-authentication-method: client_secret_post
 
         provider:
           kakao:
