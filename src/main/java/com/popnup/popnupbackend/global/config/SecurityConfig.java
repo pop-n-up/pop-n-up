@@ -23,6 +23,8 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
+  private final CustomOAuth2UserService customOAuth2UserService;
+  private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -69,8 +71,17 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin")
                     .hasRole("ADMIN")
+                    .requestMatchers("/oauth2/**")
+                    .permitAll()
+                    .requestMatchers("/login/oauth2/**")
+                    .permitAll()
                     .anyRequest()
                     .authenticated())
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                    .successHandler(oAuth2LoginSuccessHandler))
         .addFilterBefore(jwtFilter, AnonymousAuthenticationFilter.class) // JwtFilter 등록
         .build();
   }
