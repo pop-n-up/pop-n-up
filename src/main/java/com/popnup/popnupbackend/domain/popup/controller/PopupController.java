@@ -50,4 +50,16 @@ public class PopupController {
     popupService.deletePopup(id);
     return ResponseEntity.noContent().build();
   }
+
+  @GetMapping("/map")
+  public ResponseEntity<List<PopupResponse>> getPopupsOnMap(
+      @RequestParam("minLat") Double minLat,
+      @RequestParam("maxLat") Double maxLat,
+      @RequestParam("minLng") Double minLng,
+      @RequestParam("maxLng") Double maxLng) {
+
+    List<PopupResponse> result =
+        popupService.getPopupsInBoundingBox(minLat, maxLat, minLng, maxLng);
+    return ResponseEntity.ok(result);
+  }
 }

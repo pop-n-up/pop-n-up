@@ -157,4 +157,20 @@ public class PopupService {
 
     popupRepository.delete(popup);
   }
+
+  @Transactional(readOnly = true)
+  public List<PopupResponse> getPopupsInBoundingBox(
+      Double minLat, Double maxLat, Double minLng, Double maxLng) {
+
+    // 유효성 검사: 작은 값이 먼저 와야 함
+    if (minLat > maxLat || minLng > maxLng) {
+      throw new IllegalArgumentException("시작 좌표는 끝 좌표보다 작아야 합니다.");
+    }
+
+    return popupRepository
+        .findByLatitudeBetweenAndLongitudeBetween(minLat, maxLat, minLng, maxLng)
+        .stream()
+        .map(PopupResponse::from)
+        .toList();
+  }
 }
