@@ -1,7 +1,9 @@
 package com.popnup.popnupbackend.domain.payment.provider;
 
+import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayApproveRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayOrderRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayReadyRequest;
+import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayReadyResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,6 +25,10 @@ import java.util.Objects;
 public class KakaoPayProvider {
     // 카카오페이 서버에 결제 요청해주는 담당자
 
+    private final RestTemplate restTemplate;
+    //restTempalte == 다른 서버에 http 요청을 보내는 도구, Rest 방식으로 Api를 호출할 수 있는 spring 내장 클래스
+
+
     @Value("${kakaopay.secretKey}")
     private String secretKey;
 
@@ -30,7 +36,7 @@ public class KakaoPayProvider {
     private String cid;
 
     // 카카오페이에 결제 준비 요청을 보내고 카카오페이가 보내준 결과 반환
-    public KakaoReadyResponse ready(KakaoPayOrderRequest request) {
+    public KakaoPayReadyResponse ready(KakaoPayOrderRequest request) {
 
         // 서버에 보낼 결제 준비 정보
         KakaoPayReadyRequest kakaoPayReadyRequest =
@@ -50,13 +56,12 @@ public class KakaoPayProvider {
         HttpEntity<KakaoPayReadyRequest> entity = new HttpEntity<>(kakaoPayReadyRequest, getHeaders());
         //HTTP 요청에 필요한 Body랑 header 묶음
 
-        RestTemplate restTemplate = new RestTemplate();
-        //restTempalte == 다른 서버에 http 요청을 보내는 도구
-        ResponseEntity<ReadyResponse> response =
+        // rest api 호출 이후 응답받을 때까지 기다리는 동기 방식
+        ResponseEntity<KakaoPayReadyResponse> response =
                 restTemplate.postForEntity(
                         "https://open-api.kakaopay.com/online/v1/payment/ready",
                         entity,
-                        ReadyResponse.class
+                        KakaoPayReadyResponse.class
                 );
 
         // 카카오페이가 발급해준 tid(결제 거래 ID) 세션에 저장
@@ -68,6 +73,23 @@ public class KakaoPayProvider {
 
     }
 
+    // apporove API : 결제 성공시 자동으로 호출되는 결제 승인 api
+    public KakaoPayApproveResponse approve(String pgToken) {
+        KakaoPayApproveRequest request =
+                KakaoPayApproveRequest.builder()
+                        .cid(cid)
+                        .tid(SessionProvider.getStringAttribute("tid"))
+                        .partnerOrderId("12345678")
+                        .partnerUserId("12345678")
+                        .pgToken(pgToken)
+                        .build();
+
+        HttpEntity<KakaoPayApproveRequest> entity = new HttpEntity<>(request, getHeaders());
+
+        Res
+    }
+
+
     // 카카오페이 api를 호출할 때 필요한 인증정보와 데이터 형식 header에 넣음
     private HttpHeaders getHeaders() {
         HttpHeaders headers = new HttpHeaders();
@@ -76,4 +98,5 @@ public class KakaoPayProvider {
         return headers;
 
     }
+
 }
