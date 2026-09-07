@@ -3,6 +3,7 @@ package com.popnup.popnupbackend.domain.payment.provider;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayApproveRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayOrderRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayReadyRequest;
+import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayApproveResponse;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayReadyResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +58,7 @@ public class KakaoPayProvider {
         //HTTP 요청에 필요한 Body랑 header 묶음
 
         // rest api 호출 이후 응답받을 때까지 기다리는 동기 방식
+        // .class -> "이 클래스의 타입 정보를 주는 것"
         ResponseEntity<KakaoPayReadyResponse> response =
                 restTemplate.postForEntity(
                         "https://open-api.kakaopay.com/online/v1/payment/ready",
@@ -86,7 +88,9 @@ public class KakaoPayProvider {
 
         HttpEntity<KakaoPayApproveRequest> entity = new HttpEntity<>(request, getHeaders());
 
-        Res
+        ResponseEntity<KakaoPayApproveResponse> response = restTemplate.postForEntity( "https://open-api.kakaopay.com/online/v1/payment/approve", entity, KakaoPayApproveResponse.class);
+
+        return response.getBody();
     }
 
 

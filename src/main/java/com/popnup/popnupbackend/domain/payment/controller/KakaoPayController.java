@@ -1,6 +1,7 @@
 package com.popnup.popnupbackend.domain.payment.controller;
 
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayOrderRequest;
+import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayApproveResponse;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayReadyResponse;
 import com.popnup.popnupbackend.domain.payment.provider.KakaoPayProvider;
 import com.popnup.popnupbackend.global.common.ApiResponse;
@@ -22,6 +23,6 @@ public class KakaoPayController {
 
     @GetMapping("/approve")
     public ResponseEntity<ApiResponse<KakaoPayApproveResponse>> approve(@RequestParam("pg_token") String pgToken) {
-        return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.approve(pgToken));
+        return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.approve(pgToken)));
     }
 }
