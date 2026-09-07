@@ -7,9 +7,10 @@ spring:
 
   jpa:
     open-in-view: false
-  jwt:
-    secret: ${JWT_SECRET}
 
-  kakaopay:
-    secretKey: ${KAKAOPAY_SECRET_KEY}
-    cid: TC0ONETIME
+kakaopay:
+  secretKey: ${KAKAOPAY_SECRET_KEY}
+  cid: TC0ONETIME
+
+jwt:
+  secret: ${JWT_SECRET}

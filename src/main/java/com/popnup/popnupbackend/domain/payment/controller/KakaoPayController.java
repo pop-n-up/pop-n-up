@@ -14,15 +14,17 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/kakao-pay")
 public class KakaoPayController {
 
-    private final KakaoPayProvider kakaoPayProvider;
+  private final KakaoPayProvider kakaoPayProvider;
 
-    @PostMapping("/ready")
-    public ResponseEntity<ApiResponse<KakaoPayReadyResponse>> ready(@RequestBody KakaoPayOrderRequest reqeust) {
-        return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.ready(reqeust)));
-    }
+  @PostMapping("/ready")
+  public ResponseEntity<ApiResponse<KakaoPayReadyResponse>> ready(
+      @RequestBody KakaoPayOrderRequest reqeust) {
+    return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.ready(reqeust)));
+  }
 
-    @GetMapping("/approve")
-    public ResponseEntity<ApiResponse<KakaoPayApproveResponse>> approve(@RequestParam("pg_token") String pgToken) {
-        return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.approve(pgToken)));
-    }
+  @GetMapping("/approve")
+  public ResponseEntity<ApiResponse<KakaoPayApproveResponse>> approve(
+      @RequestParam("pg_token") String pgToken) {
+    return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.approve(pgToken)));
+  }
 }

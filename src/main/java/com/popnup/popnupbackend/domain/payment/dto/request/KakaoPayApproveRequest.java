@@ -7,10 +7,9 @@ import lombok.Getter;
 @Builder
 public class KakaoPayApproveRequest {
 
-    private String cid;
-    private String tid;
-    private String partnerOrderId;
-    private String partnerUserId;
-    private String pgToken;
-
+  private String cid;
+  private String tid;
+  private String partnerOrderId;
+  private String partnerUserId;
+  private String pgToken;
 }
