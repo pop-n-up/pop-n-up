@@ -13,7 +13,9 @@ import com.popnup.popnupbackend.domain.popup.exception.PopupNotFoundException;
 import com.popnup.popnupbackend.domain.popup.repository.PopupImageRepository;
 import com.popnup.popnupbackend.domain.popup.repository.PopupRepository;
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -172,5 +174,65 @@ public class PopupService {
         .stream()
         .map(PopupResponse::from)
         .toList();
+  }
+
+  // 내 위치 기준 반경 N km 이내 팝업스토어 거리순 조회
+  @Transactional(readOnly = true)
+  public List<PopupResponse> getNearbyPopups(Double latitude, Double longitude, Double radius) {
+    // 1. 기본 반경 방어 (null이거나 0 이하일 경우 기본 3.0km)
+    double searchRadius = (radius != null && radius > 0) ? radius : 3.0;
+
+    // 2. 위도 1도 ≈ 111km, 경도 1도 ≈ 111km * cos(위도)
+    double latDegreeDiff = searchRadius / 111.0;
+    double lngDegreeDiff = searchRadius / (111.0 * Math.cos(Math.toRadians(latitude)));
+
+    double minLat = latitude - latDegreeDiff;
+    double maxLat = latitude + latDegreeDiff;
+    double minLng = longitude - lngDegreeDiff;
+    double maxLng = longitude + lngDegreeDiff;
+
+    // 3. 1차: Bounding Box로 후보군 추출 (DB 인덱스 활용)
+    List<Popup> candidates =
+        popupRepository.findByLatitudeBetweenAndLongitudeBetween(minLat, maxLat, minLng, maxLng);
+
+    // 4. 2차: 하버사인 공식 계산 및 필터링, 거리순 정렬
+    return candidates.stream()
+        .filter(popup -> popup.getLatitude() != null && popup.getLongitude() != null)
+        .map(
+            popup -> {
+              // BigDecimal -> double 변환
+              double popupLat = popup.getLatitude().doubleValue();
+              double popupLng = popup.getLongitude().doubleValue();
+
+              double dist = calculateDistanceInKm(latitude, longitude, popupLat, popupLng);
+              return Map.entry(popup, dist);
+            })
+        .filter(entry -> entry.getValue() <= searchRadius)
+        .sorted(Comparator.comparingDouble(Map.Entry::getValue)) // 가까운 거리순 오름차순
+        .map(
+            entry -> {
+              double roundedDist = Math.round(entry.getValue() * 100.0) / 100.0; // 소수 둘째 자리 반올림
+              return PopupResponse.from(entry.getKey(), roundedDist);
+            })
+        .toList();
+  }
+
+  // 하버사인(Haversine) 공식: 두 위경도 좌표 간 직선거리(km) 계산
+  private double calculateDistanceInKm(double lat1, double lon1, double lat2, double lon2) {
+    final int EARTH_RADIUS_KM = 6371;
+
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLon = Math.toRadians(lon2 - lon1);
+
+    double a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2)
+            + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2))
+                * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+
+    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return EARTH_RADIUS_KM * c;
   }
 }

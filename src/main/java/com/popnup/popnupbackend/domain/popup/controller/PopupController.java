@@ -62,4 +62,14 @@ public class PopupController {
         popupService.getPopupsInBoundingBox(minLat, maxLat, minLng, maxLng);
     return ResponseEntity.ok(result);
   }
+
+  @GetMapping("/nearby")
+  public ResponseEntity<List<PopupResponse>> getNearbyPopups(
+      @RequestParam("latitude") Double latitude,
+      @RequestParam("longitude") Double longitude,
+      @RequestParam(value = "radius", defaultValue = "3.0") Double radius) {
+
+    List<PopupResponse> responses = popupService.getNearbyPopups(latitude, longitude, radius);
+    return ResponseEntity.ok(responses);
+  }
 }
