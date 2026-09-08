@@ -8,12 +8,11 @@ spring:
   jpa:
     open-in-view: false
 
+jwt:
+  secret: ${JWT_SECRET:cG9wbnVwLXNlY3JldC1rZXktZm9yLXRlc3QtZW52aXJvbm1lbnQtMjAyNi12ZXJ5LXNhZmUtYW5kLXNlY3VyZQ==}
+
   # 네이버 지도 API 공동 설정 추가
   naver:
     maps:
       client-id: xuw6b5ypsr
       client-secret: xYpDojd2SU54of2lboHi0fIRDOSr2J96Ll9RKnYZ
-
-
-jwt:
-  secret: c29tZS1qd3Qtc2VjcmV0LWtleS1leGFtcGxlLWZvci1sb2NhbC10ZXN0aW5nLTIwMjY=

@@ -1,5 +1,6 @@
 package com.popnup.popnupbackend.domain.popup.controller;
 
+import com.popnup.popnupbackend.domain.auth.dto.request.AuthUser;
 import com.popnup.popnupbackend.domain.popup.dto.reponse.PopupListResponse;
 import com.popnup.popnupbackend.domain.popup.dto.reponse.PopupResponse;
 import com.popnup.popnupbackend.domain.popup.dto.request.PopupCreateRequest;
@@ -11,6 +12,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,8 +23,10 @@ public class PopupController {
   private final PopupService popupService;
 
   @PostMapping
-  public ResponseEntity<PopupResponse> createPopup(@RequestBody @Valid PopupCreateRequest request) {
-    PopupResponse response = popupService.createPopup(request);
+  public ResponseEntity<PopupResponse> createPopup(
+      @AuthenticationPrincipal AuthUser authUser, // 추가
+      @RequestBody @Valid PopupCreateRequest request) {
+    PopupResponse response = popupService.createPopup(authUser.getId(), request);
     return ResponseEntity.status(HttpStatus.CREATED).body(response);
   }
 
@@ -40,14 +44,18 @@ public class PopupController {
 
   @PutMapping("/{id}")
   public ResponseEntity<PopupResponse> updatePopup(
-      @PathVariable("id") Long id, @RequestBody @Valid PopupUpdateRequest request) {
-    PopupResponse updatedPopup = popupService.updatePopup(id, request);
+      @AuthenticationPrincipal AuthUser authUser, // 추가
+      @PathVariable("id") Long id,
+      @RequestBody @Valid PopupUpdateRequest request) {
+    PopupResponse updatedPopup = popupService.updatePopup(id, authUser.getId(), request);
     return ResponseEntity.ok(updatedPopup);
   }
 
   @DeleteMapping("/{id}")
-  public ResponseEntity<Void> deletePopup(@PathVariable("id") Long id) {
-    popupService.deletePopup(id);
+  public ResponseEntity<Void> deletePopup(
+      @AuthenticationPrincipal AuthUser authUser, // 추가
+      @PathVariable("id") Long id) {
+    popupService.deletePopup(id, authUser.getId());
     return ResponseEntity.noContent().build();
   }
 

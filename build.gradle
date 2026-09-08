@@ -44,6 +44,13 @@ dependencies {
     runtimeOnly 'com.h2database:h2'
     runtimeOnly 'org.springframework.boot:spring-boot-h2console'
     testAnnotationProcessor 'org.projectlombok:lombok'
+
+    //querydsl
+    implementation 'io.github.openfeign.querydsl:querydsl-jpa:7.5'
+    annotationProcessor 'io.github.openfeign.querydsl:querydsl-apt:7.5:jpa'
+
+    //UUID version 7
+    implementation 'com.fasterxml.uuid:java-uuid-generator:4.3.0'
 }
 
 tasks.named('test') {

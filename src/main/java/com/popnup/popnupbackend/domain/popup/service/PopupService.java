@@ -31,7 +31,7 @@ public class PopupService {
   private final NaverGeocodeService naverGeocodeService;
 
   @Transactional
-  public PopupResponse createPopup(PopupCreateRequest request) {
+  public PopupResponse createPopup(Long memberId, PopupCreateRequest request) {
 
     BigDecimal latitude = request.getLatitude();
     BigDecimal longitude = request.getLongitude();
@@ -106,7 +106,7 @@ public class PopupService {
   }
 
   @Transactional
-  public PopupResponse updatePopup(Long popupId, PopupUpdateRequest request) {
+  public PopupResponse updatePopup(Long popupId, Long memberId, PopupUpdateRequest request) {
     Popup popup =
         popupRepository.findById(popupId).orElseThrow(() -> new PopupNotFoundException(popupId));
 
@@ -153,7 +153,7 @@ public class PopupService {
   }
 
   @Transactional
-  public void deletePopup(Long popupId) {
+  public void deletePopup(Long popupId, Long memberId) {
     Popup popup =
         popupRepository.findById(popupId).orElseThrow(() -> new PopupNotFoundException(popupId));
 
