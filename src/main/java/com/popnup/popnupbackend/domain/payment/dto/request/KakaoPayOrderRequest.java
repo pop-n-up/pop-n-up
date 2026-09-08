@@ -5,6 +5,7 @@ import lombok.Getter;
 @Getter
 public class KakaoPayOrderRequest {
 
+  private Long reservationId;
   private String itemName;
   private String quartity;
   private String totalPrice;

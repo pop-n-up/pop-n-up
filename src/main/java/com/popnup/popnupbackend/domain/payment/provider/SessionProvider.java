@@ -27,5 +27,10 @@ public class SessionProvider {
   public static String getStringAttribute(String key) {
     return (String) getAttribute(key);
   }
+
   // 세션에서 꺼낸 값을 string으로 변환
+  public static Long getLongAttribute(String key) {
+    return (Long) getAttribute(key);
+  }
+  // 세션에서 꺼낸 값을 Long으로 변환
 }

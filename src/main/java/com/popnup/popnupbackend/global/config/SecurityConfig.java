@@ -67,6 +67,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/health")
                     .permitAll()
+                    .requestMatchers("/oauth2/**", "/login/**")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin")
                     .hasRole("ADMIN")
                     .anyRequest()

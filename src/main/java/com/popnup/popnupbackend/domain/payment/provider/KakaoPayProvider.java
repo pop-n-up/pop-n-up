@@ -5,6 +5,9 @@ import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayOrderRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayReadyRequest;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayApproveResponse;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayReadyResponse;
+import com.popnup.popnupbackend.domain.reservation.entity.Reservation;
+import com.popnup.popnupbackend.domain.reservation.exception.ReservationErrorCode;
+import com.popnup.popnupbackend.domain.reservation.repository.ReservationRepository;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +27,7 @@ public class KakaoPayProvider {
   // 카카오페이 서버에 결제 요청해주는 담당자
 
   private final RestTemplate restTemplate;
+  private final ReservationRepository reservationRepository;
 
   // restTempalte == 다른 서버에 http 요청을 보내는 도구, Rest 방식으로 Api를 호출할 수 있는 spring 내장 클래스
 
@@ -35,13 +39,16 @@ public class KakaoPayProvider {
 
   // 카카오페이에 결제 준비 요청을 보내고 카카오페이가 보내준 결과 반환
   public KakaoPayReadyResponse ready(KakaoPayOrderRequest request) {
-
+    Reservation reservation =
+        reservationRepository
+            .findById(request.getReservationId())
+            .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
     // 서버에 보낼 결제 준비 정보
     KakaoPayReadyRequest kakaoPayReadyRequest =
         KakaoPayReadyRequest.builder()
             .cid(cid)
-            .partnerOrderId("!23456789")
-            .partnerUserId("123456789")
+            .partnerOrderId(reservation.getReservationNumber())
+            .partnerUserId(String.valueOf(reservation.getMember().getId()))
             .itemName(request.getItemName())
             .quantity(request.getQuartity())
             .totalAmount(request.getTotalPrice())
@@ -70,12 +77,20 @@ public class KakaoPayProvider {
 
   // apporove API : 결제 성공시 자동으로 호출되는 결제 승인 api
   public KakaoPayApproveResponse approve(String pgToken) {
+
+    Long reservationId = SessionProvider.getLongAttribute("reservationId");
+
+    Reservation reservation =
+        reservationRepository
+            .findById(reservationId)
+            .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
+
     KakaoPayApproveRequest request =
         KakaoPayApproveRequest.builder()
             .cid(cid)
             .tid(SessionProvider.getStringAttribute("tid"))
-            .partnerOrderId("12345678")
-            .partnerUserId("12345678")
+            .partnerOrderId(reservation.getReservationNumber())
+            .partnerUserId(String.valueOf(reservation.getMember().getId()))
             .pgToken(pgToken)
             .build();
 
