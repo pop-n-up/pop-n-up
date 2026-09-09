@@ -10,8 +10,9 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum PayErrorCode implements ErrorCode {
   PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제정보를 찾을 수 없습니다."),
-  RESERVATION_NOT_MATCH(HttpStatus.UNAUTHORIZED, "예약자와 결제자가 일치하지 않습니다.");
-
+  RESERVATION_NOT_MATCH(HttpStatus.FORBIDDEN, "예약자와 결제자가 일치하지 않습니다."),
+  ALREADY_PAID(HttpStatus.CONFLICT,"이미 결제가 완료된 결제입니다."
+  );
   private final HttpStatus httpStatus;
   private final String message;
 

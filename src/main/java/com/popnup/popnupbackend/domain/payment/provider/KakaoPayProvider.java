@@ -7,8 +7,10 @@ import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayReadyRequest;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayApproveResponse;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayReadyResponse;
 import com.popnup.popnupbackend.domain.payment.entity.Payment;
+import com.popnup.popnupbackend.domain.payment.enums.PaymentStatus;
 import com.popnup.popnupbackend.domain.payment.exception.PayErrorCode;
 import com.popnup.popnupbackend.domain.payment.repository.PaymentRepository;
+import com.popnup.popnupbackend.domain.popup.entity.Popup;
 import com.popnup.popnupbackend.domain.reservation.entity.Reservation;
 import com.popnup.popnupbackend.domain.reservation.exception.ReservationErrorCode;
 import com.popnup.popnupbackend.domain.reservation.repository.ReservationRepository;
@@ -66,9 +68,19 @@ public class KakaoPayProvider {
       throw PayErrorCode.RESERVATION_NOT_MATCH.toException();
     }
 
+    // 팝업 정보 가져오기
+    Popup popup = reservation.getSchedule().getPopup();
+
+    // 서버에서 결제 정보 계산
+    String itemName = popup.getTitle();
+
+    Integer quantity = reservation.getPersonCount();
+
+    Integer totalPrice = popup.getPrice() * reservation.getPersonCount();
+
     // payment 생성
     Payment payment =
-        new Payment(reservation, reservation.getReservationNumber(), request.getTotalPrice());
+        new Payment(reservation, reservation.getReservationNumber(), totalPrice);
 
     paymentRepository.save(payment);
     // 서버에 보낼 결제 준비 정보
@@ -77,17 +89,15 @@ public class KakaoPayProvider {
             .cid(cid)
             .partnerOrderId(reservation.getReservationNumber())
             .partnerUserId(String.valueOf(reservation.getMember().getId()))
-            .itemName(request.getItemName())
-            .quantity(request.getQuantity())
-            .totalAmount(request.getTotalPrice())
+            .itemName(itemName)
+            .quantity(quantity)
+            .totalAmount(totalPrice)
             .taxFreeAmount(0)
             .approvalUrl(
                 "http://localhost:8080/api/v1/kakao-pay/approve?paymentId=" + payment.getId())
             .cancelUrl("http://localhost:8080/api/v1/kakao-pay/cancel")
             .failUrl("http://localhost:8080/kakao-pay/fail")
             .build();
-
-    log.info("READY partnerUserId = [{}]", String.valueOf(reservation.getMember().getId()));
 
     HttpEntity<KakaoPayReadyRequest> entity = new HttpEntity<>(kakaoPayReadyRequest, getHeaders());
     // HTTP 요청에 필요한 Body랑 header 묶음
@@ -105,7 +115,6 @@ public class KakaoPayProvider {
 
     payment.setTid(body.getTid());
 
-    paymentRepository.save(payment);
 
     return response.getBody();
   }
@@ -117,6 +126,11 @@ public class KakaoPayProvider {
         paymentRepository
             .findById(paymentId)
             .orElseThrow(PayErrorCode.PAYMENT_NOT_FOUND::toException);
+
+    // 이미 결제된 경우 중복 승인 방지
+    if (payment.getStatus() == PaymentStatus.PAID) {
+      throw PayErrorCode.ALREADY_PAID.toException();
+    }
 
     Reservation reservation = payment.getReservation();
 
@@ -140,7 +154,7 @@ public class KakaoPayProvider {
     KakaoPayApproveResponse body = Objects.requireNonNull(response.getBody());
 
     payment.approve();
-
+    reservation.confirm();
     return body;
   }
 
