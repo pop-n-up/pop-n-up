@@ -1,5 +1,6 @@
 package com.popnup.popnupbackend.domain.payment.provider;
 
+import com.popnup.popnupbackend.domain.auth.dto.request.AuthUser;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayApproveRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayOrderRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayReadyRequest;
@@ -18,6 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -44,11 +47,24 @@ public class KakaoPayProvider {
   // 카카오페이에 결제 준비 요청을 보내고 카카오페이가 보내준 결과 반환
   public KakaoPayReadyResponse ready(KakaoPayOrderRequest request) {
 
+    Authentication authentication =
+            SecurityContextHolder.getContext().getAuthentication();
+
+    AuthUser authUser =
+            (AuthUser) authentication.getPrincipal();
+
+    Long memberId = authUser.getId();
+
     // 1. 예약 조회
     Reservation reservation =
         reservationRepository
             .findById(request.getReservationId())
             .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
+
+    // 예약자 본인인지 확인
+    if (!reservation.getMember().getId().equals(memberId)) {
+      throw PayErrorCode.RESERVATION_NOT_MATCH.toException();
+    }
 
     // payment 생성
     Payment payment =
@@ -97,10 +113,6 @@ public class KakaoPayProvider {
   // apporove API : 결제 성공시 자동으로 호출되는 결제 승인 api
   public KakaoPayApproveResponse approve(Long paymentId, String pgToken) {
 
-    log.info("========== KAKAO APPROVE ==========");
-    log.info("paymentId = {}", paymentId);
-    log.info("pgToken = [{}]", pgToken);
-
     Payment payment =
         paymentRepository
             .findById(paymentId)
@@ -118,11 +130,6 @@ public class KakaoPayProvider {
             .build();
 
     HttpEntity<KakaoPayApproveRequest> entity = new HttpEntity<>(request, getHeaders());
-
-    log.info("partnerUserId = [{}]", String.valueOf(reservation.getMember().getId()));
-
-    log.info("tid = [{}]", payment.getTid());
-    log.info("pgToken = [{}]", pgToken);
 
     ResponseEntity<KakaoPayApproveResponse> response =
         restTemplate.postForEntity(
