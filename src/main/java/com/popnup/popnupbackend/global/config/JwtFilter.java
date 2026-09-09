@@ -34,7 +34,9 @@ public class JwtFilter extends OncePerRequestFilter {
     String uri = request.getRequestURI();
 
     // 카카오페이 결제 승인 콜백은 JWT 인증 제외
-    if (uri.equals("/api/v1/kakao-pay/approve")|| uri.equals("/api/v1/kakao-pay/cancel") || uri.equals("/api/v1/kakao-pay/fail")) {
+    if (uri.equals("/api/v1/kakao-pay/approve")
+        || uri.equals("/api/v1/kakao-pay/cancel")
+        || uri.equals("/api/v1/kakao-pay/fail")) {
       filterChain.doFilter(request, response);
       return;
     }

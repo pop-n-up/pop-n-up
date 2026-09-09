@@ -49,11 +49,9 @@ public class KakaoPayProvider {
   // 카카오페이에 결제 준비 요청을 보내고 카카오페이가 보내준 결과 반환
   public KakaoPayReadyResponse ready(KakaoPayOrderRequest request) {
 
-    Authentication authentication =
-            SecurityContextHolder.getContext().getAuthentication();
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-    AuthUser authUser =
-            (AuthUser) authentication.getPrincipal();
+    AuthUser authUser = (AuthUser) authentication.getPrincipal();
 
     Long memberId = authUser.getId();
 
@@ -79,8 +77,7 @@ public class KakaoPayProvider {
     Integer totalPrice = popup.getPrice() * reservation.getPersonCount();
 
     // payment 생성
-    Payment payment =
-        new Payment(reservation, reservation.getReservationNumber(), totalPrice);
+    Payment payment = new Payment(reservation, reservation.getReservationNumber(), totalPrice);
 
     paymentRepository.save(payment);
     // 서버에 보낼 결제 준비 정보
@@ -114,7 +111,6 @@ public class KakaoPayProvider {
     KakaoPayReadyResponse body = Objects.requireNonNull(response.getBody());
 
     payment.setTid(body.getTid());
-
 
     return response.getBody();
   }
