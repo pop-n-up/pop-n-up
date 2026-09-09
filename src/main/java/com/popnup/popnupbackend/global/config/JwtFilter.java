@@ -2,6 +2,8 @@ package com.popnup.popnupbackend.global.config;
 
 import com.popnup.popnupbackend.domain.auth.dto.request.AuthUser;
 import com.popnup.popnupbackend.domain.member.enums.Role;
+import com.popnup.popnupbackend.global.error.AuthErrorCode;
+import com.popnup.popnupbackend.global.error.ServiceException;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
@@ -28,8 +30,8 @@ public class JwtFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
+
     String authorizationHeader = request.getHeader("Authorization");
-    System.out.println("Authorization Header = " + authorizationHeader);
 
     // Bearer 토큰이 없는 요청의 허용 여부는 SecurityConfig가 판단한다.
     if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
@@ -42,8 +44,11 @@ public class JwtFilter extends OncePerRequestFilter {
 
     try {
       authenticate(token, request);
-    } catch (JwtException | IllegalArgumentException exception) {
-      sendUnauthorized(response, "유효하지 않거나 만료된 JWT입니다.");
+    } catch (JwtException e) {
+      sendUnauthorized(response, AuthErrorCode.INVALID_TOKEN);
+      return;
+    } catch (ServiceException e) {
+      sendUnauthorized(response, (AuthErrorCode) e.getErrorCode());
       return;
     }
 
@@ -52,13 +57,27 @@ public class JwtFilter extends OncePerRequestFilter {
 
   private void authenticate(String token, HttpServletRequest request) {
     Claims claims = jwtUtil.getClaims(token);
-    Long userId = Long.parseLong(claims.getSubject());
+    Long userId;
+
+    try {
+      userId = Long.parseLong(claims.getSubject());
+    } catch (NumberFormatException e) {
+      throw AuthErrorCode.INVALID_USER_ID.toException();
+    }
+
     String email = claims.get("email", String.class);
     String name = claims.get("name", String.class);
-    Role role = Role.of(claims.get("role", String.class));
 
     if (email == null || email.isBlank()) {
-      throw new IllegalArgumentException("JWT에 이메일이 없습니다.");
+      throw AuthErrorCode.INVALID_EMAIL.toException();
+    }
+
+    Role role;
+
+    try {
+      role = Role.of(claims.get("role", String.class));
+    } catch (IllegalArgumentException e) {
+      throw AuthErrorCode.INVALID_ROLE.toException();
     }
 
     JwtAuthenticationToken authentication =
@@ -72,9 +91,12 @@ public class JwtFilter extends OncePerRequestFilter {
     SecurityContextHolder.setContext(securityContext);
   }
 
-  private void sendUnauthorized(HttpServletResponse response, String message) throws IOException {
-    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+  private void sendUnauthorized(
+          HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
+
+    response.setStatus(errorCode.getHttpStatus().value());
     response.setContentType("text/plain;charset=UTF-8");
-    response.getWriter().write(message);
+    response.getWriter().write(errorCode.getMessage());
   }
+
 }
