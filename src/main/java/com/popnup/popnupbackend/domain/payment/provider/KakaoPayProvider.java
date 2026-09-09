@@ -5,6 +5,9 @@ import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayOrderRequest;
 import com.popnup.popnupbackend.domain.payment.dto.request.KakaoPayReadyRequest;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayApproveResponse;
 import com.popnup.popnupbackend.domain.payment.dto.response.KakaoPayReadyResponse;
+import com.popnup.popnupbackend.domain.payment.entity.Payment;
+import com.popnup.popnupbackend.domain.payment.exception.PayErrorCode;
+import com.popnup.popnupbackend.domain.payment.repository.PaymentRepository;
 import com.popnup.popnupbackend.domain.reservation.entity.Reservation;
 import com.popnup.popnupbackend.domain.reservation.exception.ReservationErrorCode;
 import com.popnup.popnupbackend.domain.reservation.repository.ReservationRepository;
@@ -28,6 +31,7 @@ public class KakaoPayProvider {
 
   private final RestTemplate restTemplate;
   private final ReservationRepository reservationRepository;
+  private final PaymentRepository paymentRepository;
 
   // restTempalte == 다른 서버에 http 요청을 보내는 도구, Rest 방식으로 Api를 호출할 수 있는 spring 내장 클래스
 
@@ -39,10 +43,18 @@ public class KakaoPayProvider {
 
   // 카카오페이에 결제 준비 요청을 보내고 카카오페이가 보내준 결과 반환
   public KakaoPayReadyResponse ready(KakaoPayOrderRequest request) {
+
+    // 1. 예약 조회
     Reservation reservation =
         reservationRepository
             .findById(request.getReservationId())
             .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
+
+    // payment 생성
+    Payment payment =
+        new Payment(reservation, reservation.getReservationNumber(), request.getTotalPrice());
+
+    paymentRepository.save(payment);
     // 서버에 보낼 결제 준비 정보
     KakaoPayReadyRequest kakaoPayReadyRequest =
         KakaoPayReadyRequest.builder()
@@ -50,13 +62,16 @@ public class KakaoPayProvider {
             .partnerOrderId(reservation.getReservationNumber())
             .partnerUserId(String.valueOf(reservation.getMember().getId()))
             .itemName(request.getItemName())
-            .quantity(request.getQuartity())
+            .quantity(request.getQuantity())
             .totalAmount(request.getTotalPrice())
-            .taxFreeAmount("0")
-            .approvalUrl("http://localhost:8080/api/v1/kakao-pay/approve")
+            .taxFreeAmount(0)
+            .approvalUrl(
+                "http://localhost:8080/api/v1/kakao-pay/approve?paymentId=" + payment.getId())
             .cancelUrl("http://localhost:8080/api/v1/kakao-pay/cancel")
             .failUrl("http://localhost:8080/kakao-pay/fail")
             .build();
+
+    log.info("READY partnerUserId = [{}]", String.valueOf(reservation.getMember().getId()));
 
     HttpEntity<KakaoPayReadyRequest> entity = new HttpEntity<>(kakaoPayReadyRequest, getHeaders());
     // HTTP 요청에 필요한 Body랑 header 묶음
@@ -70,25 +85,33 @@ public class KakaoPayProvider {
             KakaoPayReadyResponse.class);
 
     // 카카오페이가 발급해준 tid(결제 거래 ID) 세션에 저장
-    SessionProvider.addAttribute("tid", Objects.requireNonNull(response.getBody()).getTid());
+    KakaoPayReadyResponse body = Objects.requireNonNull(response.getBody());
+
+    payment.setTid(body.getTid());
+
+    paymentRepository.save(payment);
 
     return response.getBody();
   }
 
   // apporove API : 결제 성공시 자동으로 호출되는 결제 승인 api
-  public KakaoPayApproveResponse approve(String pgToken) {
+  public KakaoPayApproveResponse approve(Long paymentId, String pgToken) {
 
-    Long reservationId = SessionProvider.getLongAttribute("reservationId");
+    log.info("========== KAKAO APPROVE ==========");
+    log.info("paymentId = {}", paymentId);
+    log.info("pgToken = [{}]", pgToken);
 
-    Reservation reservation =
-        reservationRepository
-            .findById(reservationId)
-            .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
+    Payment payment =
+        paymentRepository
+            .findById(paymentId)
+            .orElseThrow(PayErrorCode.PAYMENT_NOT_FOUND::toException);
+
+    Reservation reservation = payment.getReservation();
 
     KakaoPayApproveRequest request =
         KakaoPayApproveRequest.builder()
             .cid(cid)
-            .tid(SessionProvider.getStringAttribute("tid"))
+            .tid(payment.getTid())
             .partnerOrderId(reservation.getReservationNumber())
             .partnerUserId(String.valueOf(reservation.getMember().getId()))
             .pgToken(pgToken)
@@ -96,13 +119,22 @@ public class KakaoPayProvider {
 
     HttpEntity<KakaoPayApproveRequest> entity = new HttpEntity<>(request, getHeaders());
 
+    log.info("partnerUserId = [{}]", String.valueOf(reservation.getMember().getId()));
+
+    log.info("tid = [{}]", payment.getTid());
+    log.info("pgToken = [{}]", pgToken);
+
     ResponseEntity<KakaoPayApproveResponse> response =
         restTemplate.postForEntity(
             "https://open-api.kakaopay.com/online/v1/payment/approve",
             entity,
             KakaoPayApproveResponse.class);
 
-    return response.getBody();
+    KakaoPayApproveResponse body = Objects.requireNonNull(response.getBody());
+
+    payment.approve();
+
+    return body;
   }
 
   // 카카오페이 api를 호출할 때 필요한 인증정보와 데이터 형식 header에 넣음

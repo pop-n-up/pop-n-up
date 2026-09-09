@@ -7,6 +7,6 @@ public class KakaoPayOrderRequest {
 
   private Long reservationId;
   private String itemName;
-  private String quartity;
-  private String totalPrice;
+  private Integer quantity;
+  private Integer totalPrice;
 }

@@ -24,7 +24,7 @@ public class KakaoPayController {
 
   @GetMapping("/approve")
   public ResponseEntity<ApiResponse<KakaoPayApproveResponse>> approve(
-      @RequestParam("pg_token") String pgToken) {
-    return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.approve(pgToken)));
+      @RequestParam("paymentId") Long paymentId, @RequestParam("pg_token") String pgToken) {
+    return ResponseEntity.ok(ApiResponse.success(kakaoPayProvider.approve(paymentId, pgToken)));
   }
 }

@@ -57,6 +57,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/h2-console/**")
                     .permitAll()
+                    .requestMatchers("/api/v1/kakao-pay/approve")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/signin")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/signup")

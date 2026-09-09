@@ -31,6 +31,14 @@ public class JwtFilter extends OncePerRequestFilter {
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
 
+    String uri = request.getRequestURI();
+
+    // 카카오페이 결제 승인 콜백은 JWT 인증 제외
+    if (uri.equals("/api/v1/kakao-pay/approve")) {
+      filterChain.doFilter(request, response);
+      return;
+    }
+
     String authorizationHeader = request.getHeader("Authorization");
 
     // Bearer 토큰이 없는 요청의 허용 여부는 SecurityConfig가 판단한다.
@@ -91,12 +99,11 @@ public class JwtFilter extends OncePerRequestFilter {
     SecurityContextHolder.setContext(securityContext);
   }
 
-  private void sendUnauthorized(
-          HttpServletResponse response, AuthErrorCode errorCode) throws IOException {
+  private void sendUnauthorized(HttpServletResponse response, AuthErrorCode errorCode)
+      throws IOException {
 
     response.setStatus(errorCode.getHttpStatus().value());
     response.setContentType("text/plain;charset=UTF-8");
     response.getWriter().write(errorCode.getMessage());
   }
-
 }
