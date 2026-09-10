@@ -57,6 +57,11 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/h2-console/**")
                     .permitAll()
+                    .requestMatchers(
+                        "/api/v1/kakao-pay/approve",
+                        "/api/v1/kakao-pay/cancel",
+                        "/api/v1/kakao-pay/fail")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/signin")
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/auth/signup")
@@ -66,6 +71,8 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/gatherings")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/v1/health")
+                    .permitAll()
+                    .requestMatchers("/oauth2/**", "/login/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/admin")
                     .hasRole("ADMIN")

@@ -1,9 +1,9 @@
 package com.popnup.popnupbackend.domain.member.service;
 
 import com.popnup.popnupbackend.domain.auth.dto.request.AuthUser;
-import com.popnup.popnupbackend.domain.member.dto.reponse.MemberGetResponse;
 import com.popnup.popnupbackend.domain.member.dto.request.MemberDeleteRequest;
 import com.popnup.popnupbackend.domain.member.dto.request.MemberUpdatePasswordRequest;
+import com.popnup.popnupbackend.domain.member.dto.response.MemberGetResponse;
 import com.popnup.popnupbackend.domain.member.entity.Member;
 import com.popnup.popnupbackend.domain.member.enums.MemberStatus;
 import com.popnup.popnupbackend.domain.member.exception.MemberNotFoundException;
