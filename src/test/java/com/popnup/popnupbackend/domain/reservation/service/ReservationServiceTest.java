@@ -99,8 +99,9 @@ class ReservationServiceTest {
 
       assertThatThrownBy(() -> reservationService.book(1L, req))
           .isInstanceOf(ServiceException.class)
-              .satisfies(e -> {
-                ServiceException se = (ServiceException)  e;
+          .satisfies(
+              e -> {
+                ServiceException se = (ServiceException) e;
                 assertThat(se.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
               });
     }

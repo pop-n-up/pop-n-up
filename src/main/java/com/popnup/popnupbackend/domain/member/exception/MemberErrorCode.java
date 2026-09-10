@@ -16,7 +16,6 @@ public enum MemberErrorCode implements ErrorCode {
   PASSWORD_NOT_MATCH(HttpStatus.BAD_REQUEST, "비밀번호가 올바르지 않습니다."),
   ROLE_NOT_MATCH(HttpStatus.FORBIDDEN, "해당 ROLE은 유효하지 않습니다.");
 
-
   private final HttpStatus httpStatus;
   private final String message;
 

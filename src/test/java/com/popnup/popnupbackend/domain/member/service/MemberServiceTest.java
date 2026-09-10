@@ -52,7 +52,7 @@ class MemberServiceTest {
   void 내정보_조회_성공() {
     // given
     when(memberRepository.findByIdAndStatusNot(1L, MemberStatus.DELETED))
-            .thenReturn(Optional.of(member));
+        .thenReturn(Optional.of(member));
 
     // when
     MemberGetResponse response = memberService.getMe(1L);
@@ -70,17 +70,14 @@ class MemberServiceTest {
   void 내정보_조회_회원이_없으면_예외() {
     // given
     when(memberRepository.findByIdAndStatusNot(1L, MemberStatus.DELETED))
-            .thenReturn(Optional.empty());
+        .thenReturn(Optional.empty());
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.getMe(1L),
-                    ServiceException.class);
+        catchThrowableOfType(() -> memberService.getMe(1L), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
 
     verify(memberRepository).findByIdAndStatusNot(1L, MemberStatus.DELETED);
   }
@@ -96,17 +93,13 @@ class MemberServiceTest {
 
     when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-    when(passwordEncoder.matches("oldPassword", "encodedPassword"))
-            .thenReturn(true);
+    when(passwordEncoder.matches("oldPassword", "encodedPassword")).thenReturn(true);
 
-    MemberUpdatePasswordRequest request =
-            new MemberUpdatePasswordRequest();
+    MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest();
 
-    ReflectionTestUtils.setField(
-            request, "oldPassword", "oldPassword");
+    ReflectionTestUtils.setField(request, "oldPassword", "oldPassword");
 
-    ReflectionTestUtils.setField(
-            request, "newPassword", "newPassword123");
+    ReflectionTestUtils.setField(request, "newPassword", "newPassword123");
 
     // when
     memberService.updatePassword(authUser, request);
@@ -115,8 +108,7 @@ class MemberServiceTest {
     assertThat(member.getPassword()).isEqualTo("newPassword123");
 
     verify(memberRepository).findById(1L);
-    verify(passwordEncoder)
-            .matches("oldPassword", "encodedPassword");
+    verify(passwordEncoder).matches("oldPassword", "encodedPassword");
   }
 
   @Test
@@ -124,27 +116,21 @@ class MemberServiceTest {
     // given
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.empty());
+    when(memberRepository.findById(1L)).thenReturn(Optional.empty());
 
-    MemberUpdatePasswordRequest request =
-            new MemberUpdatePasswordRequest();
+    MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest();
 
-    ReflectionTestUtils.setField(
-            request, "oldPassword", "oldPassword");
+    ReflectionTestUtils.setField(request, "oldPassword", "oldPassword");
 
-    ReflectionTestUtils.setField(
-            request, "newPassword", "newPassword123");
+    ReflectionTestUtils.setField(request, "newPassword", "newPassword123");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.updatePassword(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.updatePassword(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
 
     verify(memberRepository).findById(1L);
     verify(passwordEncoder, never()).matches(any(), any());
@@ -157,27 +143,21 @@ class MemberServiceTest {
 
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.of(member));
+    when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-    MemberUpdatePasswordRequest request =
-            new MemberUpdatePasswordRequest();
+    MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest();
 
-    ReflectionTestUtils.setField(
-            request, "oldPassword", "oldPassword");
+    ReflectionTestUtils.setField(request, "oldPassword", "oldPassword");
 
-    ReflectionTestUtils.setField(
-            request, "newPassword", "newPassword123");
+    ReflectionTestUtils.setField(request, "newPassword", "newPassword123");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.updatePassword(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.updatePassword(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.MEMBER_NOT_VALIDATE_ACTIVE);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_VALIDATE_ACTIVE);
 
     verify(passwordEncoder, never()).matches(any(), any());
   }
@@ -185,38 +165,27 @@ class MemberServiceTest {
   @Test
   void OAuth_회원은_비밀번호를_변경할_수_없다() {
     // given
-    Member oauthMember =
-            Member.createOAuth2(
-                    "kakao@test.com",
-                    "카카오회원",
-                    "kakao-123");
+    Member oauthMember = Member.createOAuth2("kakao@test.com", "카카오회원", "kakao-123");
 
-    ReflectionTestUtils.setField(
-            oauthMember, "id", 1L);
+    ReflectionTestUtils.setField(oauthMember, "id", 1L);
 
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.of(oauthMember));
+    when(memberRepository.findById(1L)).thenReturn(Optional.of(oauthMember));
 
-    MemberUpdatePasswordRequest request =
-            new MemberUpdatePasswordRequest();
+    MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest();
 
-    ReflectionTestUtils.setField(
-            request, "oldPassword", "oldPassword");
+    ReflectionTestUtils.setField(request, "oldPassword", "oldPassword");
 
-    ReflectionTestUtils.setField(
-            request, "newPassword", "newPassword123");
+    ReflectionTestUtils.setField(request, "newPassword", "newPassword123");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.updatePassword(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.updatePassword(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.MEMBER_NOT_PROVIDER_LOCAL);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_PROVIDER_LOCAL);
 
     verify(passwordEncoder, never()).matches(any(), any());
   }
@@ -226,38 +195,27 @@ class MemberServiceTest {
     // given
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.of(member));
+    when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-    when(passwordEncoder.matches(
-            "wrongPassword",
-            "encodedPassword"))
-            .thenReturn(false);
+    when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
 
-    MemberUpdatePasswordRequest request =
-            new MemberUpdatePasswordRequest();
+    MemberUpdatePasswordRequest request = new MemberUpdatePasswordRequest();
 
-    ReflectionTestUtils.setField(
-            request, "oldPassword", "wrongPassword");
+    ReflectionTestUtils.setField(request, "oldPassword", "wrongPassword");
 
-    ReflectionTestUtils.setField(
-            request, "newPassword", "newPassword123");
+    ReflectionTestUtils.setField(request, "newPassword", "newPassword123");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.updatePassword(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.updatePassword(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.PASSWORD_NOT_MATCH);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.PASSWORD_NOT_MATCH);
 
-    assertThat(member.getPassword())
-            .isEqualTo("encodedPassword");
+    assertThat(member.getPassword()).isEqualTo("encodedPassword");
 
-    verify(passwordEncoder)
-            .matches("wrongPassword", "encodedPassword");
+    verify(passwordEncoder).matches("wrongPassword", "encodedPassword");
   }
 
   // =========================
@@ -269,31 +227,23 @@ class MemberServiceTest {
     // given
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.of(member));
+    when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-    when(passwordEncoder.matches(
-            "password",
-            "encodedPassword"))
-            .thenReturn(true);
+    when(passwordEncoder.matches("password", "encodedPassword")).thenReturn(true);
 
-    MemberDeleteRequest request =
-            new MemberDeleteRequest();
+    MemberDeleteRequest request = new MemberDeleteRequest();
 
-    ReflectionTestUtils.setField(
-            request, "password", "password");
+    ReflectionTestUtils.setField(request, "password", "password");
 
     // when
     memberService.deleteMe(authUser, request);
 
     // then
-    assertThat(member.getStatus())
-            .isEqualTo(MemberStatus.DELETED);
+    assertThat(member.getStatus()).isEqualTo(MemberStatus.DELETED);
 
     verify(memberRepository).findById(1L);
 
-    verify(passwordEncoder)
-            .matches("password", "encodedPassword");
+    verify(passwordEncoder).matches("password", "encodedPassword");
   }
 
   @Test
@@ -301,24 +251,19 @@ class MemberServiceTest {
     // given
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.empty());
+    when(memberRepository.findById(1L)).thenReturn(Optional.empty());
 
-    MemberDeleteRequest request =
-            new MemberDeleteRequest();
+    MemberDeleteRequest request = new MemberDeleteRequest();
 
-    ReflectionTestUtils.setField(
-            request, "password", "password");
+    ReflectionTestUtils.setField(request, "password", "password");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.deleteMe(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.deleteMe(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
 
     verify(memberRepository).findById(1L);
 
@@ -332,29 +277,23 @@ class MemberServiceTest {
 
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.of(member));
+    when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-    MemberDeleteRequest request =
-            new MemberDeleteRequest();
+    MemberDeleteRequest request = new MemberDeleteRequest();
 
-    ReflectionTestUtils.setField(
-            request, "password", "password");
+    ReflectionTestUtils.setField(request, "password", "password");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.deleteMe(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.deleteMe(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.MEMBER_NOT_VALIDATE_ACTIVE);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_VALIDATE_ACTIVE);
 
     verify(passwordEncoder, never()).matches(any(), any());
 
-    assertThat(member.getStatus())
-            .isEqualTo(MemberStatus.SUSPENDED);
+    assertThat(member.getStatus()).isEqualTo(MemberStatus.SUSPENDED);
   }
 
   @Test
@@ -362,34 +301,24 @@ class MemberServiceTest {
     // given
     when(authUser.getId()).thenReturn(1L);
 
-    when(memberRepository.findById(1L))
-            .thenReturn(Optional.of(member));
+    when(memberRepository.findById(1L)).thenReturn(Optional.of(member));
 
-    when(passwordEncoder.matches(
-            "wrongPassword",
-            "encodedPassword"))
-            .thenReturn(false);
+    when(passwordEncoder.matches("wrongPassword", "encodedPassword")).thenReturn(false);
 
-    MemberDeleteRequest request =
-            new MemberDeleteRequest();
+    MemberDeleteRequest request = new MemberDeleteRequest();
 
-    ReflectionTestUtils.setField(
-            request, "password", "wrongPassword");
+    ReflectionTestUtils.setField(request, "password", "wrongPassword");
 
     // when
     ServiceException exception =
-            catchThrowableOfType(
-                    () -> memberService.deleteMe(authUser, request),
-                    ServiceException.class);
+        catchThrowableOfType(
+            () -> memberService.deleteMe(authUser, request), ServiceException.class);
 
     // then
-    assertThat(exception.getErrorCode())
-            .isEqualTo(MemberErrorCode.PASSWORD_NOT_MATCH);
+    assertThat(exception.getErrorCode()).isEqualTo(MemberErrorCode.PASSWORD_NOT_MATCH);
 
-    assertThat(member.getStatus())
-            .isEqualTo(MemberStatus.ACTIVE);
+    assertThat(member.getStatus()).isEqualTo(MemberStatus.ACTIVE);
 
-    verify(passwordEncoder)
-            .matches("wrongPassword", "encodedPassword");
+    verify(passwordEncoder).matches("wrongPassword", "encodedPassword");
   }
 }
