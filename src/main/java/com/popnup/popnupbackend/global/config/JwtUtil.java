@@ -16,9 +16,6 @@ public class JwtUtil {
   private final SecretKey secretKey;
 
   public JwtUtil(@Value("${jwt.secret}") String secret) {
-    System.out.println("========== JWT SECRET ==========");
-    System.out.println(secret);
-    System.out.println("================================");
 
     byte[] keyBytes = Decoders.BASE64.decode(secret);
     this.secretKey = Keys.hmacShaKeyFor(keyBytes);
