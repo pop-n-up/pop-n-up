@@ -43,7 +43,7 @@ jwt:
   secret: ${JWT_SECRET:cG9wbnVwLXNlY3JldC1rZXktZm9yLXRlc3QtZW52aXJvbm1lbnQtMjAyNi12ZXJ5LXNhZmUtYW5kLXNlY3VyZQ==}
 
   # 네이버 지도 API 공동 설정 추가
-  naver:
-    maps:
-      client-id: xuw6b5ypsr
-      client-secret: xYpDojd2SU54of2lboHi0fIRDOSr2J96Ll9RKnYZ
+naver:
+  maps:
+    client-id: ${NAVER_MAPS_CLIENT_ID}
+    client-secret: ${NAVER_MAPS_CLIENT_SECRET}
