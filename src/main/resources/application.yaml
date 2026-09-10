@@ -2,9 +2,13 @@ spring:
   application:
     name: popnup
 
+
   profiles:
     active: local
 
+  config:
+    import:
+      optional:file:.env
   jpa:
     open-in-view: false
 
@@ -29,6 +33,11 @@ spring:
             token_uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user_name_attribute: id
+
+
+kakaopay:
+  secretKey: ${KAKAOPAY_SECRET_KEY}
+  cid: TC0ONETIME
 
 jwt:
   secret: ${JWT_SECRET}
