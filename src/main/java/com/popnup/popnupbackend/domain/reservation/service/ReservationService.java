@@ -2,7 +2,7 @@ package com.popnup.popnupbackend.domain.reservation.service;
 
 import com.fasterxml.uuid.Generators;
 import com.popnup.popnupbackend.domain.member.entity.Member;
-import com.popnup.popnupbackend.domain.member.exception.MemberNotFoundException;
+import com.popnup.popnupbackend.domain.member.exception.MemberErrorCode;
 import com.popnup.popnupbackend.domain.member.repository.MemberRepository;
 import com.popnup.popnupbackend.domain.qrcode.dto.request.CheckInRequest;
 import com.popnup.popnupbackend.domain.qrcode.dto.response.CheckInResponse;
@@ -44,7 +44,7 @@ public class ReservationService {
     Member member =
         memberRepository
             .findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException()); // todo 에러 처리 통일 필요
+            .orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException); // todo 에러 처리 통일 필요
 
     Schedule schedule =
         scheduleRepository

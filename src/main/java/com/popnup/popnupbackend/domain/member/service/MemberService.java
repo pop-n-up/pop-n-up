@@ -6,8 +6,7 @@ import com.popnup.popnupbackend.domain.member.dto.request.MemberUpdatePasswordRe
 import com.popnup.popnupbackend.domain.member.dto.response.MemberGetResponse;
 import com.popnup.popnupbackend.domain.member.entity.Member;
 import com.popnup.popnupbackend.domain.member.enums.MemberStatus;
-import com.popnup.popnupbackend.domain.member.exception.MemberNotFoundException;
-import com.popnup.popnupbackend.domain.member.exception.PasswordNotMatchException;
+import com.popnup.popnupbackend.domain.member.exception.MemberErrorCode;
 import com.popnup.popnupbackend.domain.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,7 +25,7 @@ public class MemberService {
     Member member =
         memberRepository
             .findByIdAndStatusNot(id, MemberStatus.DELETED)
-            .orElseThrow(() -> new MemberNotFoundException());
+            .orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
 
     return new MemberGetResponse(
         member.getId(), member.getEmail(), member.getName(), member.getRole());
@@ -37,7 +36,7 @@ public class MemberService {
     Member member =
         memberRepository
             .findById(authUser.getId())
-            .orElseThrow(() -> new MemberNotFoundException());
+            .orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
 
     member.validateActive();
     member.validateLocalProvider();
@@ -47,7 +46,7 @@ public class MemberService {
 
     boolean matches = passwordEncoder.matches(oldRawPassword, oldEncodedPassword);
     if (!matches) {
-      throw new PasswordNotMatchException();
+      throw MemberErrorCode.PASSWORD_NOT_MATCH.toException();
     }
 
     member.updatePassword(request.getNewPassword());
@@ -58,7 +57,7 @@ public class MemberService {
     Member member =
         memberRepository
             .findById(authUser.getId())
-            .orElseThrow(() -> new MemberNotFoundException());
+            .orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
 
     member.validateActive();
 
@@ -67,7 +66,7 @@ public class MemberService {
     boolean matches = passwordEncoder.matches(rawPassword, encodedPassword);
 
     if (!matches) {
-      throw new PasswordNotMatchException();
+      throw MemberErrorCode.PASSWORD_NOT_MATCH.toException();
     }
 
     member.delete();
