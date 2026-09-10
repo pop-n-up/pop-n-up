@@ -4,6 +4,9 @@ import com.fasterxml.uuid.Generators;
 import com.popnup.popnupbackend.domain.member.entity.Member;
 import com.popnup.popnupbackend.domain.member.exception.MemberNotFoundException;
 import com.popnup.popnupbackend.domain.member.repository.MemberRepository;
+import com.popnup.popnupbackend.domain.qrcode.dto.request.CheckInRequest;
+import com.popnup.popnupbackend.domain.qrcode.dto.response.CheckInResponse;
+import com.popnup.popnupbackend.domain.qrcode.service.QrService;
 import com.popnup.popnupbackend.domain.reservation.dto.request.ReservationCreateRequest;
 import com.popnup.popnupbackend.domain.reservation.dto.response.AdminReservationResponse;
 import com.popnup.popnupbackend.domain.reservation.dto.response.ReservationCreateResponse;
@@ -16,20 +19,24 @@ import com.popnup.popnupbackend.domain.schedule.entity.Schedule;
 import com.popnup.popnupbackend.domain.schedule.exception.ScheduleErrorCode;
 import com.popnup.popnupbackend.domain.schedule.repository.ScheduleRepository;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationService {
 
   private final ReservationRepository reservationRepository;
   private final ScheduleRepository scheduleRepository;
   private final MemberRepository memberRepository;
+  private final QrService qrService;
+  private final ReservationCancelManager reservationCancelManager;
 
   // 예약 생성
   @Transactional
@@ -37,14 +44,13 @@ public class ReservationService {
     Member member =
         memberRepository
             .findById(memberId)
-            .orElseThrow(() -> new MemberNotFoundException()); // 에러 처리 통일 필요
+            .orElseThrow(() -> new MemberNotFoundException()); // todo 에러 처리 통일 필요
 
     Schedule schedule =
         scheduleRepository
             .findByIdWithPessimisticLock(request.getScheduleId())
             .orElseThrow(ScheduleErrorCode.SCHEDULE_NOT_FOUND::toException);
 
-    // 중복 예약 검사
     if (reservationRepository.hasActiveReservation(schedule.getId(), memberId)) {
       throw ReservationErrorCode.DUPLICATE_USER_RESERVATION.toException();
     }
@@ -70,9 +76,9 @@ public class ReservationService {
         savedReservation.getId(), savedReservation.getReservationNumber());
   }
 
-  /* 결제 성공 시 예약 확정 처리
-    - 결제 도메인 도입 후 보완 필요
-  */
+  // todo 결제 성공 시 예약 확정 처리
+  // note QR 코드 생성 및 저장은 추가됨
+  // 결제 시 예약 확정
   @Transactional
   public void confirmReservation(Long reservationId) {
     Reservation reservation =
@@ -80,6 +86,37 @@ public class ReservationService {
             .findById(reservationId)
             .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
     reservation.confirm();
+  }
+
+  // QR 생성
+  @Transactional(readOnly = true)
+  public byte[] getReservationQrCode(Long memberId, Long reservationId) {
+    Reservation reservation =
+        reservationRepository
+            .findById(reservationId)
+            .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
+
+    if (!reservation.isOwnedBy(memberId)) {
+      throw ReservationErrorCode.UNAUTHORIZED_RESERVATION_ACCESS.toException();
+    }
+
+    if (reservation.getStatus() != ReservationStatus.CONFIRMED) {
+      throw ReservationErrorCode.INVALID_RESERVATION_STATUS.toException();
+    }
+
+    return qrService.generateQrCodeImage(reservation.getReservationNumber());
+  }
+
+  // 체크인
+  @Transactional
+  public CheckInResponse checkIn(CheckInRequest request) {
+    Reservation reservation =
+        reservationRepository
+            .findByReservationNumber(request.getReservationNumber())
+            .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
+
+    reservation.checkIn();
+    return CheckInResponse.from(reservation);
   }
 
   // 예약 취소
@@ -90,23 +127,14 @@ public class ReservationService {
             .findById(reservationId)
             .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
 
-    if (!reservation.getMember().getId().equals(memberId)) {
+    if (!reservation.isOwnedBy(memberId)) {
       throw ReservationErrorCode.UNAUTHORIZED_RESERVATION_ACCESS.toException();
     }
 
-    reservation.cancel();
-
-    // 락 추가
-    Long scheduleId = reservation.getSchedule().getId();
-    Schedule schedule =
-        scheduleRepository
-            .findByIdWithPessimisticLock(scheduleId)
-            .orElseThrow(ScheduleErrorCode.SCHEDULE_NOT_FOUND::toException);
-
-    schedule.cancelReservation(reservation.getPersonCount());
+    reservationCancelManager.cancel(reservation);
   }
 
-  // 예약 목록 조회
+  // 예약 목록 전체 조회
   @Transactional(readOnly = true)
   public List<ReservationResponse> allReservations(Long memberId) {
     return reservationRepository.getAllReservation(memberId).stream()
@@ -114,7 +142,7 @@ public class ReservationService {
         .toList();
   }
 
-  // 단 건 조회
+  // 예약 단 건 조회
   @Transactional(readOnly = true)
   public ReservationResponse oneReservation(Long memberId, Long reservationId) {
     return reservationRepository
@@ -123,7 +151,7 @@ public class ReservationService {
         .orElseThrow(ReservationErrorCode.RESERVATION_NOT_FOUND::toException);
   }
 
-  // 관리자 - 예약 목록 조회
+  // 관리자 - 예약 목록 전체 조회
   @Transactional(readOnly = true)
   public List<AdminReservationResponse> getAdminReservations(
       Long popupId, LocalDate scheduleDate, ReservationStatus status) {
@@ -132,23 +160,22 @@ public class ReservationService {
         .toList();
   }
 
-  // 결제 타임아웃 시 예약 취소
+  // 미사용 예약 만료 상태 변경
   @Transactional
-  public void payTimeOut() {
-    LocalDateTime deadLine = LocalDateTime.now().minusMinutes(10);
+  public void expirePastReservation() {
+    LocalDate today = LocalDate.now();
+    LocalTime nowTime = LocalTime.now();
 
-    List<Reservation> deadReservations =
-        reservationRepository.findByStatusAndCreatedAtBefore(ReservationStatus.PENDING, deadLine);
+    List<Reservation> expiredList = reservationRepository.findExpiredReservations(today, nowTime);
 
-    for (Reservation dr : deadReservations) {
-      dr.cancel();
+    if (expiredList.isEmpty()) {
+      return;
+    }
 
-      Long scheduleId = dr.getSchedule().getId();
-      Schedule schedule =
-          scheduleRepository
-              .findByIdWithPessimisticLock(scheduleId)
-              .orElseThrow(ScheduleErrorCode.SCHEDULE_NOT_FOUND::toException);
-      schedule.cancelReservation(dr.getPersonCount());
+    log.info("[expiredPastReservation] 만료 처리 대상 건수: {}건", expiredList.size());
+
+    for (Reservation reservation : expiredList) {
+      reservation.expired();
     }
   }
 }

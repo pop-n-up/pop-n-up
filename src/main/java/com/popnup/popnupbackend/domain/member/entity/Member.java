@@ -41,7 +41,7 @@ public class Member extends BaseEntity {
   private Provider provider;
 
   @Column(nullable = true)
-  private String privateId;
+  private String providerId;
 
   @Column(nullable = false)
   @Enumerated(EnumType.STRING)
