@@ -85,12 +85,12 @@ public class Reservation extends BaseEntity {
 
   // 예약 취소
   public void cancel() {
-    if (this.status != ReservationStatus.CONFIRMED && this.status != ReservationStatus.PENDING) {
-      throw ReservationErrorCode.INVALID_RESERVATION_STATUS.toException();
-    }
-
     if (this.status == ReservationStatus.USED) {
       throw ReservationErrorCode.ALREADY_PROCESSED_RESERVATION.toException();
+    }
+
+    if (this.status != ReservationStatus.CONFIRMED && this.status != ReservationStatus.PENDING) {
+      throw ReservationErrorCode.INVALID_RESERVATION_STATUS.toException();
     }
 
     this.status = ReservationStatus.CANCELED;
@@ -103,5 +103,12 @@ public class Reservation extends BaseEntity {
     }
 
     return memberId.equals(this.member.getId());
+  }
+
+  // 노쇼 자동 만료
+  public void expired() {
+    if (this.status == ReservationStatus.CONFIRMED) {
+      this.status = ReservationStatus.EXPIRED;
+    }
   }
 }
