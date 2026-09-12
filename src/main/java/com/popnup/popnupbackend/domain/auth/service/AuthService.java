@@ -5,7 +5,7 @@ import com.popnup.popnupbackend.domain.auth.dto.request.SignupRequest;
 import com.popnup.popnupbackend.domain.member.entity.Member;
 import com.popnup.popnupbackend.domain.member.exception.MemberErrorCode;
 import com.popnup.popnupbackend.domain.member.repository.MemberRepository;
-import com.popnup.popnupbackend.global.config.JwtUtil;
+import com.popnup.popnupbackend.global.security.JwtUtil;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;

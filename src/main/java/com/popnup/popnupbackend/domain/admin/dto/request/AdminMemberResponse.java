@@ -7,19 +7,20 @@ import lombok.Getter;
 
 @Getter
 public class AdminMemberResponse {
-    private final Long id;
-    private final String email;
-    private final String name;
-    private final String role;
-    private final String provider;
-    private final String memberStatus;
+  private final Long id;
+  private final String email;
+  private final String name;
+  private final String role;
+  private final String provider;
+  private final String memberStatus;
 
-    public AdminMemberResponse(Long id, String email, String name, Role role, Provider provider, MemberStatus memberStatus) {
-        this.id = id;
-        this.email = email;
-        this.name = name;
-        this.role = role.toString();
-        this.provider = provider.toString();
-        this.memberStatus = memberStatus.toString();
-    }
+  public AdminMemberResponse(
+      Long id, String email, String name, Role role, Provider provider, MemberStatus memberStatus) {
+    this.id = id;
+    this.email = email;
+    this.name = name;
+    this.role = role.toString();
+    this.provider = provider.toString();
+    this.memberStatus = memberStatus.toString();
+  }
 }

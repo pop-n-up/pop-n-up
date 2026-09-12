@@ -1,4 +1,4 @@
-package com.popnup.popnupbackend.global.config;
+package com.popnup.popnupbackend.global.security;
 
 import com.popnup.popnupbackend.domain.auth.dto.request.AuthUser;
 import com.popnup.popnupbackend.domain.member.enums.Role;

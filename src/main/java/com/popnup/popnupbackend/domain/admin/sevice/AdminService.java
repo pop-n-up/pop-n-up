@@ -5,55 +5,57 @@ import com.popnup.popnupbackend.domain.admin.dto.request.AdminMemberStatusUpdate
 import com.popnup.popnupbackend.domain.member.entity.Member;
 import com.popnup.popnupbackend.domain.member.exception.MemberErrorCode;
 import com.popnup.popnupbackend.domain.member.repository.MemberRepository;
-import com.popnup.popnupbackend.global.common.ApiResponse;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class AdminService {
 
-    private final MemberRepository memberRepository;
+  private final MemberRepository memberRepository;
 
-    @Transactional(readOnly = true)
-    public List<AdminMemberResponse> getMembers() {
-        List<Member> members = memberRepository.findAll();
+  @Transactional(readOnly = true)
+  public List<AdminMemberResponse> getMembers() {
+    List<Member> members = memberRepository.findAll();
 
-        return members.stream().map(
-                member -> new AdminMemberResponse(
-                        member.getId(),
-                        member.getEmail(),
-                        member.getName(),
-                        member.getRole(),
-                        member.getProvider(),
-                        member.getStatus()
-                )).toList();
-    }
+    return members.stream()
+        .map(
+            member ->
+                new AdminMemberResponse(
+                    member.getId(),
+                    member.getEmail(),
+                    member.getName(),
+                    member.getRole(),
+                    member.getProvider(),
+                    member.getStatus()))
+        .toList();
+  }
 
-    @Transactional(readOnly = true)
-    public AdminMemberResponse getMember(Long memberId) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
+  @Transactional(readOnly = true)
+  public AdminMemberResponse getMember(Long memberId) {
+    Member member =
+        memberRepository
+            .findById(memberId)
+            .orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
 
-        return new AdminMemberResponse(
-                member.getId(),
-                member.getEmail(),
-                member.getName(),
-                member.getRole(),
-                member.getProvider(),
-                member.getStatus()
-        );
-    }
+    return new AdminMemberResponse(
+        member.getId(),
+        member.getEmail(),
+        member.getName(),
+        member.getRole(),
+        member.getProvider(),
+        member.getStatus());
+  }
 
-    @Transactional
-    public void updateMemberStatus(
-            Long memberId, AdminMemberStatusUpdateRequest request
-    ) {
-        Member member = memberRepository.findById(memberId).orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
+  @Transactional
+  public void updateMemberStatus(Long memberId, AdminMemberStatusUpdateRequest request) {
+    Member member =
+        memberRepository
+            .findById(memberId)
+            .orElseThrow(MemberErrorCode.MEMBER_NOT_FOUND::toException);
 
-        member.updateStatus(request.getStatus());
-    }
+    member.updateStatus(request.getStatus());
+  }
 }

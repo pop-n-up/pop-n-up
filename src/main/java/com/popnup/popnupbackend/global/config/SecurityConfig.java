@@ -1,5 +1,6 @@
 package com.popnup.popnupbackend.global.config;
 
+import com.popnup.popnupbackend.global.security.JwtFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -81,6 +82,8 @@ public class SecurityConfig {
                     .requestMatchers("/oauth2/**")
                     .permitAll()
                     .requestMatchers("/login/oauth2/**")
+                    .permitAll()
+                    .requestMatchers("/redis/**")
                     .permitAll()
                     .anyRequest()
                     .authenticated())

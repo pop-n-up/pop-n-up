@@ -1,4 +1,4 @@
-package com.popnup.popnupbackend.global.config;
+package com.popnup.popnupbackend.global.security;
 
 import com.popnup.popnupbackend.domain.member.enums.Role;
 import io.jsonwebtoken.Claims;
@@ -38,5 +38,12 @@ public class JwtUtil {
 
   public Claims getClaims(String token) {
     return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload();
+  }
+
+  // JwtUtil에서 JWT 남은 시간 계산하기
+  public long getRemainingExpirationMillis(String token) {
+    Date expiration = getClaims(token).getExpiration();
+
+    return expiration.getTime() - System.currentTimeMillis();
   }
 }

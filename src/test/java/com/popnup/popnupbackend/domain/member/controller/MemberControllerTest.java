@@ -13,7 +13,7 @@ import com.popnup.popnupbackend.domain.member.dto.request.MemberUpdatePasswordRe
 import com.popnup.popnupbackend.domain.member.dto.response.MemberGetResponse;
 import com.popnup.popnupbackend.domain.member.enums.Role;
 import com.popnup.popnupbackend.domain.member.service.MemberService;
-import com.popnup.popnupbackend.global.config.JwtUtil;
+import com.popnup.popnupbackend.global.security.JwtUtil;
 import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

@@ -8,5 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AdminMemberStatusUpdateRequest {
 
-    private MemberStatus status;
+  private MemberStatus status;
 }
