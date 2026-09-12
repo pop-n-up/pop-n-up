@@ -12,7 +12,7 @@ public class JwtBlacklistService {
   private final RedisTemplate<String, String> redisTemplate;
 
   // 블랙리스트 키
-  private static final String BLACKLIST_PREFIX = "blacklist";
+  private static final String BLACKLIST_PREFIX = "blacklist:";
 
   public void blacklist(String token, long expirationMillis) {
     String key = BLACKLIST_PREFIX + token;
