@@ -22,7 +22,7 @@ public class AdminMemberController {
   }
 
   @GetMapping("/admin/members/{memberId}")
-  public ResponseEntity<ApiResponse<AdminMemberResponse>> getMember(Long memberId) {
+  public ResponseEntity<ApiResponse<AdminMemberResponse>> getMember(@PathVariable Long memberId) {
     return ResponseEntity.ok(ApiResponse.success(adminService.getMember(memberId)));
   }
 
