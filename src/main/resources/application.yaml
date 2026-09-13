@@ -41,10 +41,10 @@ kakaopay:
   cid: TC0ONETIME
 
 jwt:
-  secret: ${JWT_SECRET:cG9wbnVwLXNlY3JldC1rZXktZm9yLXRlc3QtZW52aXJvbm1lbnQtMjAyNi12ZXJ5LXNhZmUtYW5kLXNlY3VyZQ==}
+  secret: ${JWT_SECRET:c29tZS1qd3Qtc2VjcmV0LWtleS1leGFtcGxlLWZvci1sb2NhbC10ZXN0aW5nMTIzNDU=}
 
   # 네이버 지도 API 공동 설정 추가
 naver:
   maps:
-    client-id: ${NAVER_MAPS_CLIENT_ID}
-    client-secret: ${NAVER_MAPS_CLIENT_SECRET}
+    client-id: ${NAVER_MAPS_CLIENT_ID:dummy-naver-id}
+    client-secret: ${NAVER_MAPS_CLIENT_SECRET:dummy-naver-secret}
