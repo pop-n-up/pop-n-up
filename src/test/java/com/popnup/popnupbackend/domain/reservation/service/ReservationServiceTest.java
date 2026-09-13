@@ -8,7 +8,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.popnup.popnupbackend.domain.member.entity.Member;
-import com.popnup.popnupbackend.domain.member.exception.MemberNotFoundException;
+import com.popnup.popnupbackend.domain.member.exception.MemberErrorCode;
 import com.popnup.popnupbackend.domain.member.repository.MemberRepository;
 import com.popnup.popnupbackend.domain.qrcode.dto.request.CheckInRequest;
 import com.popnup.popnupbackend.domain.qrcode.dto.response.CheckInResponse;
@@ -92,13 +92,18 @@ class ReservationServiceTest {
     }
 
     @Test
-    @DisplayName("실패: 회원이 존재하지 않으면 MemberNotFoundException 던짐")
+    @DisplayName("실패: 회원이 존재하지 않으면 MEMBER_NOT_FOUND 던짐")
     void fail_MemberNotFound() {
       ReservationCreateRequest req = new ReservationCreateRequest();
       given(memberRepository.findById(1L)).willReturn(Optional.empty());
 
       assertThatThrownBy(() -> reservationService.book(1L, req))
-          .isInstanceOf(MemberNotFoundException.class);
+          .isInstanceOf(ServiceException.class)
+          .satisfies(
+              e -> {
+                ServiceException se = (ServiceException) e;
+                assertThat(se.getErrorCode()).isEqualTo(MemberErrorCode.MEMBER_NOT_FOUND);
+              });
     }
 
     @Test

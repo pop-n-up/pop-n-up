@@ -1,5 +1,6 @@
 package com.popnup.popnupbackend.global.config;
 
+import com.popnup.popnupbackend.global.security.JwtFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -23,6 +24,8 @@ import org.springframework.security.web.authentication.AnonymousAuthenticationFi
 public class SecurityConfig {
 
   private final JwtFilter jwtFilter;
+  private final CustomOAuth2UserService customOAuth2UserService;
+  private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
   @Bean
   public PasswordEncoder passwordEncoder() {
@@ -74,15 +77,23 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers("/oauth2/**", "/login/**")
                     .permitAll()
-                    .requestMatchers(
-                        HttpMethod.GET, "/popups/**") // GET 요청만 비로그인 접근 허용 (지도, 목록, 상세)
+                    .requestMatchers(HttpMethod.GET, "/popups/**") // GET 요청만 비로그인 접근 허용 (지도, 목록, 상세)
                     .permitAll()
-                    .requestMatchers(
-                        HttpMethod.GET,
-                        "/admin/**") // admin 으로 시작하는 모든 요청모든 요청(POST, PUT, DELETE 등)은 ADMIN 권한 필수
+                    .requestMatchers(HttpMethod.GET, "/admin/**") // admin 으로 시작하는 모든 요청모든 요청(POST, PUT, DELETE 등)은 ADMIN 권한 필수
                     .hasRole("ADMIN")
+                    .requestMatchers("/oauth2/**")
+                    .permitAll()
+                    .requestMatchers("/login/oauth2/**")
+                    .permitAll()
+                    .requestMatchers("/redis/**")
+                    .permitAll()
                     .anyRequest()
                     .authenticated())
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .userInfoEndpoint(userInfo -> userInfo.userService(customOAuth2UserService))
+                    .successHandler(oAuth2LoginSuccessHandler))
         .addFilterBefore(jwtFilter, AnonymousAuthenticationFilter.class) // JwtFilter 등록
         .build();
   }

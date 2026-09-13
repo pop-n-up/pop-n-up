@@ -13,14 +13,20 @@ spring:
     console:
       enabled: true
 
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
 logging:
   level:
     com.popnup: debug
 
+
 naver:
   maps:
-    client-id: xuw6b5ypsr
-    client-secret: xYpDojd2SU54of2lboHi0fIRDOSr2J96Ll9RKnYZ
+    client-id: ${NAVER_MAPS_CLIENT_ID}
+    client-secret: ${NAVER_MAPS_CLIENT_SECRET}
 
 jwt:
-  secret: c29tZS1qd3Qtc2VjcmV0LWtleS1leGFtcGxlLWZvci1sb2NhbC10ZXN0aW5nLTIwMjY=
+  secret: ${JWT_SECRET}
