@@ -12,7 +12,11 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "reservations")
+@Table(
+    name = "reservations",
+    indexes = {
+      @Index(name = "idx_reservation_status_created_at", columnList = "status, created_at")
+    })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Reservation extends BaseEntity {
 
@@ -51,7 +55,6 @@ public class Reservation extends BaseEntity {
     this.status = status;
   }
 
-  // 예약 생성 - 결제하면 confirme되게 추가해야 함
   public static Reservation createReservation(
       String reservationNumber, Member member, Schedule schedule, Integer personCount) {
     return new Reservation(
