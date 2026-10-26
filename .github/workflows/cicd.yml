@@ -139,6 +139,8 @@ jobs:
 
           echo "✅ 기본 버전 → v${NEW_VERSION} 변경 완료"
 
+
+
       # Step 3: Instance Refresh 시작
       - name: Start Instance Refresh
         id: refresh
@@ -163,27 +165,76 @@ jobs:
           ASG_NAME: ${{ vars.ASG_NAME }}
           REFRESH_ID: ${{ steps.refresh.outputs.refresh_id }}
         run: |
-          echo "⏳ Instance Refresh 완료 대기 중..."
-
-          for i in $(seq 1 30); do
-            STATUS=$(aws autoscaling describe-instance-refreshes \
+            echo "⏳ Instance Refresh 완료 대기 중..."
+            echo "Refresh ID: ${REFRESH_ID}"
+            echo ""
+        
+            for i in $(seq 1 30); do
+        
+              echo "=========================================="
+              echo "시도 ${i}/30"
+              echo "=========================================="
+        
+              STATUS=$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name ${ASG_NAME} \
+                --instance-refresh-ids ${REFRESH_ID} \
+                --query 'InstanceRefreshes[0].Status' \
+                --output text)
+        
+              echo "📌 Refresh 상태: ${STATUS}"
+        
+              echo ""
+              echo "📊 Refresh 상세 정보:"
+              aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name ${ASG_NAME} \
+                --instance-refresh-ids ${REFRESH_ID} \
+                --query 'InstanceRefreshes[0].[Status,PercentageComplete,InstancesToUpdate,InstancesToProcess,Preferences]' \
+                --output table || true
+        
+              echo ""
+              echo "🖥️ ASG 인스턴스 상태:"
+              aws autoscaling describe-auto-scaling-groups \
+                --auto-scaling-group-names ${ASG_NAME} \
+                --query 'AutoScalingGroups[0].Instances[*].[InstanceId,LifecycleState,HealthStatus,LaunchTemplate.Version]' \
+                --output table || true
+        
+              echo ""
+        
+              if [ "${STATUS}" = "Successful" ]; then
+                echo "✅ Instance Refresh 성공! 배포 완료!"
+                exit 0
+        
+              elif [ "${STATUS}" = "Failed" ] || [ "${STATUS}" = "Cancelled" ]; then
+                echo "❌ Instance Refresh 실패: ${STATUS}"
+        
+                echo ""
+                echo "❗ Refresh 전체 정보:"
+                aws autoscaling describe-instance-refreshes \
+                  --auto-scaling-group-name ${ASG_NAME} \
+                  --instance-refresh-ids ${REFRESH_ID} \
+                  --output json || true
+        
+                exit 1
+              fi
+        
+              sleep 30
+            done
+        
+            echo ""
+            echo "❌ Instance Refresh 타임아웃 (15분 초과)"
+        
+            echo ""
+            echo "========== 최종 Refresh 정보 =========="
+            aws autoscaling describe-instance-refreshes \
               --auto-scaling-group-name ${ASG_NAME} \
               --instance-refresh-ids ${REFRESH_ID} \
-              --query 'InstanceRefreshes[0].Status' \
-              --output text)
-
-            echo "시도 ${i}/30 - 상태: ${STATUS}"
-
-            if [ "${STATUS}" = "Successful" ]; then
-              echo "✅ Instance Refresh 성공! 배포 완료!"
-              exit 0
-            elif [ "${STATUS}" = "Failed" ] || [ "${STATUS}" = "Cancelled" ]; then
-              echo "❌ Instance Refresh 실패: ${STATUS}"
-              exit 1
-            fi
-
-            sleep 30
-          done
-
-          echo "❌ Instance Refresh 타임아웃 (15분 초과)"
-          exit 1
+              --output json || true
+        
+            echo ""
+            echo "========== 최종 ASG 인스턴스 정보 =========="
+            aws autoscaling describe-auto-scaling-groups \
+              --auto-scaling-group-names ${ASG_NAME} \
+              --query 'AutoScalingGroups[0].Instances[*].[InstanceId,LifecycleState,HealthStatus,LaunchTemplate.Version]' \
+              --output table || true
+        
+            exit 1
