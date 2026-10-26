@@ -71,7 +71,7 @@ jobs:
 
           echo "✅ Pushed: $IMAGE_URI:$SHORT_SHA"
 
-  deploy:
+   deploy:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -102,7 +102,7 @@ jobs:
           IMAGE_TAG="__IMAGE_TAG__"
           ECR_URI="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${ECR_REPOSITORY}"
 
-          dnf update -y
+          # dnf update는 부팅 시간만 늘려서 뺐다 (Docker 설치에는 필요 없음)
           dnf install -y docker
           systemctl enable docker
           systemctl start docker
@@ -135,7 +135,7 @@ jobs:
 
           echo "✅ 기본 버전 → v${NEW_VERSION} 변경 완료"
 
-      # 변경: 이전 실행이 남긴 Refresh가 있으면 취소하고 끝날 때까지 기다린다 (InstanceRefreshInProgress 방지)
+      # 이전 실행이 남긴 Refresh가 있으면 취소하고 끝날 때까지 기다린다 (InstanceRefreshInProgress 방지)
       - name: Cancel previous Instance Refresh
         env:
           ASG_NAME: ${{ vars.ASG_NAME }}
@@ -154,24 +154,24 @@ jobs:
               aws autoscaling cancel-instance-refresh --auto-scaling-group-name ${ASG_NAME}
             fi
 
-            for i in $(seq 1 40); do
+            for i in $(seq 1 10); do
+              sleep 30
+
               STATUS=$(aws autoscaling describe-instance-refreshes \
                 --auto-scaling-group-name ${ASG_NAME} \
                 --max-records 1 \
                 --query 'InstanceRefreshes[0].Status' \
                 --output text)
 
-              echo "취소 대기 ${i}/40 - 상태: ${STATUS}"
+              echo "취소 대기 ${i}/10 - 상태: ${STATUS}"
 
               if [ "${STATUS}" = "Cancelled" ]; then
                 break
               fi
-
-              sleep 15
             done
 
             if [ "${STATUS}" != "Cancelled" ]; then
-              echo "❌ 이전 Refresh 취소가 10분 안에 끝나지 않았습니다 (${STATUS})"
+              echo "❌ 이전 Refresh 취소가 5분 안에 끝나지 않았습니다 (${STATUS})"
               exit 1
             fi
           fi
@@ -183,11 +183,12 @@ jobs:
         env:
           ASG_NAME: ${{ vars.ASG_NAME }}
         run: |
+          # InstanceWarmup 120 → 60: healthy 판정 뒤 다음 인스턴스로 넘어가기 전 대기 시간
           REFRESH_ID=$(aws autoscaling start-instance-refresh \
             --auto-scaling-group-name ${ASG_NAME} \
             --preferences '{
               "MinHealthyPercentage": 100,
-              "InstanceWarmup": 120
+              "InstanceWarmup": 60
             }' \
             --query 'InstanceRefreshId' \
             --output text)
@@ -204,11 +205,11 @@ jobs:
           echo "Refresh ID: ${REFRESH_ID}"
           echo ""
 
-          # 변경: 15회(7분 30초) → 40회(20분). 인스턴스 2대를 차례로 교체하는 시간을 감안
-          for i in $(seq 1 40); do
+          # 15회 × 60초 = 15분. 배포는 보통 5~7분이라 두 배 넘게 여유
+          for i in $(seq 1 15); do
 
             echo "=========================================="
-            echo "시도 ${i}/40"
+            echo "시도 ${i}/15"
             echo "=========================================="
 
             STATUS=$(aws autoscaling describe-instance-refreshes \
@@ -253,12 +254,11 @@ jobs:
               exit 1
             fi
 
-            sleep 30
+            sleep 60
           done
 
           echo ""
-          # 변경: 메시지를 늘린 대기 시간에 맞춤
-          echo "❌ Instance Refresh 타임아웃 (20분 초과)"
+          echo "❌ Instance Refresh 타임아웃 (15분 초과)"
 
           echo ""
           echo "========== 최종 Refresh 정보 =========="
