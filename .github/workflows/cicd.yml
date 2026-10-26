@@ -135,6 +135,49 @@ jobs:
 
           echo "✅ 기본 버전 → v${NEW_VERSION} 변경 완료"
 
+      # 변경: 이전 실행이 남긴 Refresh가 있으면 취소하고 끝날 때까지 기다린다 (InstanceRefreshInProgress 방지)
+      - name: Cancel previous Instance Refresh
+        env:
+          ASG_NAME: ${{ vars.ASG_NAME }}
+        run: |
+          STATUS=$(aws autoscaling describe-instance-refreshes \
+            --auto-scaling-group-name ${ASG_NAME} \
+            --max-records 1 \
+            --query 'InstanceRefreshes[0].Status' \
+            --output text)
+
+          echo "📌 직전 Refresh 상태: ${STATUS}"
+
+          if [ "${STATUS}" = "Pending" ] || [ "${STATUS}" = "InProgress" ] || [ "${STATUS}" = "Cancelling" ]; then
+            if [ "${STATUS}" != "Cancelling" ]; then
+              echo "⚠️ 진행 중인 Refresh를 취소합니다"
+              aws autoscaling cancel-instance-refresh --auto-scaling-group-name ${ASG_NAME}
+            fi
+
+            for i in $(seq 1 40); do
+              STATUS=$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name ${ASG_NAME} \
+                --max-records 1 \
+                --query 'InstanceRefreshes[0].Status' \
+                --output text)
+
+              echo "취소 대기 ${i}/40 - 상태: ${STATUS}"
+
+              if [ "${STATUS}" = "Cancelled" ]; then
+                break
+              fi
+
+              sleep 15
+            done
+
+            if [ "${STATUS}" != "Cancelled" ]; then
+              echo "❌ 이전 Refresh 취소가 10분 안에 끝나지 않았습니다 (${STATUS})"
+              exit 1
+            fi
+          fi
+
+          echo "✅ 새 Refresh를 시작할 수 있습니다"
+
       - name: Start Instance Refresh
         id: refresh
         env:
@@ -161,10 +204,11 @@ jobs:
           echo "Refresh ID: ${REFRESH_ID}"
           echo ""
 
-          for i in $(seq 1 15); do
+          # 변경: 15회(7분 30초) → 40회(20분). 인스턴스 2대를 차례로 교체하는 시간을 감안
+          for i in $(seq 1 40); do
 
             echo "=========================================="
-            echo "시도 ${i}/15"
+            echo "시도 ${i}/40"
             echo "=========================================="
 
             STATUS=$(aws autoscaling describe-instance-refreshes \
@@ -213,7 +257,8 @@ jobs:
           done
 
           echo ""
-          echo "❌ Instance Refresh 타임아웃 (약 7분 30초 초과)"
+          # 변경: 메시지를 늘린 대기 시간에 맞춤
+          echo "❌ Instance Refresh 타임아웃 (20분 초과)"
 
           echo ""
           echo "========== 최종 Refresh 정보 =========="
