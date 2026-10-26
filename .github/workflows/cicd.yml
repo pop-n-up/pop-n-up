@@ -71,7 +71,7 @@ jobs:
 
           echo "✅ Pushed: $IMAGE_URI:$SHORT_SHA"
 
-   deploy:
+  deploy:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
