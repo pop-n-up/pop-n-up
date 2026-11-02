@@ -251,7 +251,8 @@ flowchart LR
 
 # 기술적 의사결정
 
-## 1. Layered Architecture
+<details>
+<summary><b>1. Layered Architecture</b></summary>
 
 ### 선택 이유
 
@@ -270,9 +271,10 @@ flowchart LR
 
 각 도메인을 중심으로 관련 Controller, Service, Repository, Entity, DTO를 분리하여 기능별 책임을 구분했습니다.
 
----
+</details>
 
-## 2. Spring Security + JWT
+<details>
+<summary><b>2. Spring Security + JWT</b></summary>
 
 ### 선택 이유
 
@@ -290,9 +292,10 @@ flowchart LR
 
 Kakao OAuth2 로그인 역시 로그인 성공 후 서비스 JWT를 발급하여 동일한 인증 체계를 사용하도록 구성했습니다.
 
----
+</details>
 
-## 3. Redis JWT Blacklist
+<details>
+<summary><b>3. Redis JWT Blacklist</b></summary>
 
 ### 문제
 
@@ -313,9 +316,10 @@ flowchart LR
     C --> F[인증 차단]
 ```
 
----
+</details>
 
-## 4. QueryDSL
+<details>
+<summary><b>4. QueryDSL</b></summary>
 
 ### 선택 이유
 
@@ -330,11 +334,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
 - 예약 상태 조건
 - Reservation / Member / Schedule / Popup 연관 조회
 
+</details>
 
----
-
-
-## 5. 세마포어
+<details>
+<summary><b>5. 세마포어</b></summary>
 
 - **도입 배경**
 
@@ -423,9 +426,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 초당 처리한 요청 수 (과부하 거절 제외) | 2,159.8 | 2,967.6 | 1.37배 많음 |
     | 초당 처리한 트랜잭션 수 | 21.6 | 36.0 | 1.67배 많음 |
 
----
+</details>
 
-## 6. Redis Lua 스크립트 (좌석 선점)
+<details>
+<summary><b>6. Redis Lua 스크립트 (좌석 선점)</b></summary>
 
 - **도입 배경**
 
@@ -535,9 +539,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 초당 처리한 요청 수 | 154.2 | 240.5 | 1.56배 많음 |
     | 초당 처리한 트랜잭션 수 | 61.7 | 96.2 | 1.56배 많음 |
 
----
+</details>
 
-## 7. 커서 페이지네이션
+<details>
+<summary><b>7. 커서 페이지네이션</b></summary>
 
 - **도입 배경**
 
@@ -642,9 +647,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 뒤쪽 응답 p95 (ms, 4,901~5,000쪽, OFFSET → 커서) | 228.4 | 2.3 | 99배 빠름 |
     | 5,000쪽 전체 탐색 시간 (초, OFFSET → 커서) | 508.2 | 12.9 | 39배 짧음 |
 
----
+</details>
 
-## 8. 복합 인덱스
+<details>
+<summary><b>8. 복합 인덱스</b></summary>
 
 - **도입 배경**
 
@@ -721,9 +727,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 스캔 행 수 | 200,030 | 80 | 2,500배 적음 |
     | DB 실행 시간 (ms) | 335.78 | 1.04 | 323배 짧음 |
 
----
+</details>
 
-## 9. Redis 캐시 (논리 만료)
+<details>
+<summary><b>9. Redis 캐시 (논리 만료)</b></summary>
 
 - **도입 배경**
 
@@ -818,9 +825,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 응답 p99 (ms) | 8.4 | 3.5 | 2.40배 빠름 |
     | 만료 직후 1초 DB 조회 수 | 2,016 | 1 | 2,016배 적음 |
 
----
+</details>
 
-## 10. 청크 단위 트랜잭션
+<details>
+<summary><b>10. 청크 단위 트랜잭션</b></summary>
 
 - **도입 배경**
 
@@ -929,9 +937,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     |---|---:|---:|---:|
     | 복구 시간 (초) | 435.2 | 17.6 | 24.7배 짧음 |
 
----
+</details>
 
-## 11. SKIP LOCKED 다중 워커
+<details>
+<summary><b>11. SKIP LOCKED 다중 워커</b></summary>
 
 - **도입 배경**
 
@@ -1039,9 +1048,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 초당 처리 건수 (한 인기 회차 집중, 워커 2) | 11,339 | 17,007 | 1.50배 많음 |
     | 초당 처리 건수 (한 인기 회차 집중, 워커 4) | 11,339 | 16,728 | 1.48배 많음 |
 
----
+</details>
 
-## 12. ShedLock
+<details>
+<summary><b>12. ShedLock</b></summary>
 
 - **도입 배경**
 
@@ -1079,9 +1089,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
 
   따라서 **ShedLock (Redis 잠금 저장소)으로 결정**했습니다.
 
----
+</details>
 
-## 13. 상태 조건 UPDATE
+<details>
+<summary><b>13. 상태 조건 UPDATE</b></summary>
 
 - **도입 배경**
 
@@ -1203,9 +1214,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     |---|---:|---:|---:|
     | 확정 처리 p99 (ms) | 27.1 | 13.7 | 1.98배 빠름 |
 
----
+</details>
 
-## 14. 정원 재동기화 (주기적 대사)
+<details>
+<summary><b>14. 정원 재동기화 (주기적 대사)</b></summary>
 
 - **도입 배경**
 
@@ -1282,9 +1294,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
 
     복구 시간은 장애가 끝난 시각부터 불일치를 0으로 만든 재동기화가 끝난 시각까지입니다. Redis 데이터 유실은 첫 주기가 빈 키를 채우는 동안 들어온 예약 때문에 11개 회차가 새로 어긋났고, 두 주기 뒤 보정되어 약 175초가 걸렸습니다. 앱 강제 종료 적용 전의 2개 회차는 재동기화 없이도 관찰 끝 무렵 사라졌으며 원인은 확인하지 못했습니다.
 
----
+</details>
 
-## 15. Transactional Outbox
+<details>
+<summary><b>15. Transactional Outbox</b></summary>
 
 - **도입 배경**
 
@@ -1382,9 +1395,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 취소 응답 p95 (ms) | 4,613.2 | 31.8 | 145배 빠름 |
     | 취소 응답 p99 (ms) | 4,733.2 | 110.9 | 42.7배 빠름 |
 
----
+</details>
 
-## 16. Redis 대기열 (진입 때 확정)
+<details>
+<summary><b>16. Redis 대기열 (진입 때 확정)</b></summary>
 
 - **도입 배경**
 
@@ -1480,9 +1494,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 예약 완료 p99 (ms) | 3,441 | 494 | 6.97배 빠름 |
     | 예약 id를 받기까지 p95 (ms, 적용 전은 예약 완료) | 3,155 | 1,639 | 1.92배 빠름 |
 
----
+</details>
 
-## 17. Redis Stream
+<details>
+<summary><b>17. Redis Stream</b></summary>
 
 - **도입 배경**
 
@@ -1520,9 +1535,10 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
 
   따라서 **Redis Stream (소비자 그룹)으로 결정**했습니다.
 
----
+</details>
 
-## 18. Redis Lua 스크립트 (대기열 왕복 병합)
+<details>
+<summary><b>18. Redis Lua 스크립트 (대기열 왕복 병합)</b></summary>
 
 - **도입 배경**
 
@@ -1602,6 +1618,7 @@ QueryDSL의 `BooleanExpression`을 이용하여 필요한 조건만 동적으로
     | 상태 확인 응답 p99 (ms) | 2,332.7 | 1,453.4 | 1.60배 빠름 |
     | 매진 여부 MGET 수 | 22,164 | 1,063 | 20.9배 적음 |
 
+</details>
 
 ---
 
