@@ -537,9 +537,10 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 도입 후 | 10,000 | 1,719.0 | 1,734.0 | 0.00 | 3,598.8 | 2,967.6 | 36.0 | 0 |
 
 
-![과부하 제어 응답 시간 백분위](docs/img/plan/v3-1-1-latency.png)
+<img width="1000" height="500" alt="v3-1-1-latency" src="https://github.com/user-attachments/assets/16bcc210-cf4c-4279-8509-9eeaa37d41ef" />
 
-![과부하 제어 누적 처리한 요청](docs/img/plan/v3-1-1-throughput.png)
+<img width="1000" height="500" alt="v3-1-1-throughput" src="https://github.com/user-attachments/assets/601a99fb-9c5b-4573-9d68-847ac8521497" />
+
 
 **성능 개선 요약**
 - **응답 시간:** p95 3,095.9 ms → 1,719.0 ms (44.5% 단축, 1.80배 빠름), p99 3,130.8 ms → 1,734.0 ms (44.6% 단축, 1.81배 빠름)
@@ -570,9 +571,9 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 도입 전 | 250 | 1,569.5 | 1,593.1 | 0.00 | 154.2 | 154.2 | 61.7 | 0 | 11 |
 | 도입 후 | 250 | 959.0 | 1,020.4 | 0.00 | 240.5 | 240.5 | 96.2 | 0 | 0 |
 
-![인기 회차 예약 경합 응답 시간 백분위](docs/img/plan/v3-1-2-latency.png)
+<img width="1000" height="500" alt="v3-1-2-latency" src="https://github.com/user-attachments/assets/162e1bed-9be8-461c-a47a-0439f2cd0c14" />
 
-![인기 회차 예약 경합 누적 응답 수](docs/img/plan/v3-1-2-throughput.png)
+<img width="1000" height="500" alt="v3-1-2-throughput" src="https://github.com/user-attachments/assets/f5ff64f9-f01b-4e15-8e62-61eb01e31438" />
 
 **성능 개선 요약**
 - **응답 시간:** p95 1,569.5 ms → 959.0 ms (38.9% 단축, 1.64배 빠름), p99 1,593.1 ms → 1,020.4 ms (35.9% 단축, 1.56배 빠름)
@@ -604,7 +605,7 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 도입 전 | 230 | 2,905.6 | 3,151.3 | 0.00 | 1.9 | 1 | 542.26 | 300,010 | 24,919.9 |
 | 도입 후 | 864 | 784.2 | 809.6 | 0.00 | 7.2 | 1 | 335.78 | 200,030 | 5.0 |
 
-![페이지네이션 응답 시간 백분위](docs/img/plan/v3-2-1-latency.png)
+<img width="1100" height="500" alt="v3-2-1-latency" src="https://github.com/user-attachments/assets/821be17a-cbca-479b-a9a1-2fb94c59f088" />
 
 **② 정렬 기준 복합 인덱스**
 
@@ -615,7 +616,7 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 도입 전 | 864 | 784.2 | 809.6 | 0.00 | 7.2 | 200,030 | 335.78 |
 | 도입 후 | 178,689 | 3.8 | 4.5 | 0.00 | 1,489.2 | 80 | 1.04 |
 
-![복합 인덱스 응답 시간 백분위](docs/img/plan/v3-2-2-latency.png)
+<img width="1100" height="500" alt="v3-2-2-latency" src="https://github.com/user-attachments/assets/6cbdd631-6394-4906-8632-4af0ed6f6b6c" />
 
 **③ 커서 페이지네이션**
 
@@ -626,7 +627,7 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 도입 전 | 5.9 | 228.4 | 38.7 | 508.2 |
 | 도입 후 | 4.0 | 2.3 | 0.6 | 12.9 |
 
-![쪽 번호별 응답 시간](docs/img/plan/v3-2-3-pages.png)
+<img width="1100" height="500" alt="v3-2-3-pages" src="https://github.com/user-attachments/assets/1d090772-4a88-4cf7-b047-a1ac83b19c4d" />
 
 **성능 개선 요약**
 - **① 페이지네이션 + 조인 제거**
@@ -657,14 +658,14 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 
 **전후 비교**
 
-테스트 시나리오: 같은 팝업 · 날짜의 일정 목록을 초당 2,000건 조회 (캐시 3초)
+테스트 시나리오: 같은 팝업 · 날짜의 일정 목록을 초당 2,000건 조회
 
 | 구분 | 표본 수 | p95 (ms) | p99 (ms) | 오류 % | 초당 처리한 요청 수 | 적중 응답 p99 (ms) | 미적중 응답 p99 (ms) | 만료 직후 1초 DB 조회 수 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | 캐시 없음 | 240,001 | 4.3 | 8.4 | 0.00 | 2,000.1 | — | 8.4 | 2,016 |
 | 캐시 + 동시 재생성 제어 | 240,001 | 1.6 | 3.5 | 0.00 | 2,000.1 | 1.0 | 11.2 | 1 |
 
-![초당 DB 조회 수](docs/img/plan/v3-2-4-db-selects.png)
+<img width="1100" height="500" alt="v3-2-4-db-selects" src="https://github.com/user-attachments/assets/861582c3-a048-4aed-a635-2bffcfbceb42" />
 
 **성능 개선 요약**
 - **응답 시간:** p95 4.3 ms → 1.6 ms (62.8% 단축, 2.69배 빠름), p99 8.4 ms → 3.5 ms (58.3% 단축, 2.40배 빠름)
@@ -673,7 +674,7 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 
 ---
 
-## 9. 대량 예약 만료 처리 (청크 단위 트랜잭션 · SKIP LOCKED 다중 워커)
+## 9. 대량 예약 만료 처리 (청크 단위 트랜잭션, SKIP LOCKED 다중 워커)
 
 **문제 원인**
 - 기존 코드는 만료 대상을 한 번에 모두 메모리로 읽은 뒤(스캔 970,916행), 예약마다 트랜잭션을 열어 예약 · 회차 행을 잠그고 하나씩 처리했습니다.
@@ -689,29 +690,29 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 
 **① 청크 처리 · 청크 단위 트랜잭션**
 
-테스트 시나리오: 전체 예약 100만 건 중 만료된 예약 2만 건을 처리, 처리하는 동안 만료 대상과 같은 회차에 예약 요청 초당 400건. 만료 대상을 여러 회차 분산 / 한 인기 회차 집중으로 놓고 각각 측정 (집중은 정원 10만인 회차 하나에 몰아 부하를 키운 조건). 도입 후의 청크 크기는 100 · 500 · 1,000 중 사전 측정으로 고른 값
+테스트 시나리오: 전체 예약 100만 건 중 만료된 예약 2만 건을 처리, 처리하는 동안 만료 대상과 같은 회차에 예약 요청 초당 400건. 만료 대상을 여러 회차 분산 / 한 인기 회차 집중으로 놓고 각각 측정 
 
 **여러 회차 분산**
 
-| 단계 | 처리 시간 (초) | 초당 처리 건수 | 스캔 행 수 | 앱 메모리 최대 (MB) | 락 보유 시간 최대 (ms) | 배치 전 예약 API p99 (ms) | 배치 중 예약 API p99 (ms) | 처리 시간 단축률 (도입 전 대비) |
+| 단계 | 처리 시간 (초) | 초당 처리 건수 | 스캔 행 수 | 앱 메모리 최대 (MB) | 락 보유 시간 최대 (ms) | 배치 전 예약 API p99 (ms) | 배치 중 예약 API p99 (ms) | 처리 시간 단축률 |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | 도입 전 | 446.2 | 45 | 970,916 | 1,353 | 243.3 | 35.5 | 34.2 | — |
 | 도입 후 | 17.7 | 1,128 | 20,000 | 1,731 | 255.8 | 34.7 | 89.0 | 96.0% |
 
-**한 인기 회차 집중** (스캔 행 수 · 앱 메모리는 분산과 같아 뺌)
+**한 인기 회차 집중**
 
-| 단계 | 처리 시간 (초) | 초당 처리 건수 | 락 보유 시간 최대 (ms) | 배치 전 예약 API p99 (ms) | 배치 중 예약 API p99 (ms) | 처리 시간 단축률 (도입 전 대비) |
+| 단계 | 처리 시간 (초) | 초당 처리 건수 | 락 보유 시간 최대 (ms) | 배치 전 예약 API p99 (ms) | 배치 중 예약 API p99 (ms) | 처리 시간 단축률 |
 |---|---:|---:|---:|---:|---:|---:|
 | 도입 전 | 876.0 | 23 | 4,058.2 | 27,685.8 | 28,342.3 | — |
 | 도입 후 | 72.5 | 276 | 647.6 | 473.6 | 487.3 | 91.7% |
 
-![미처리 만료 대상 수 — 여러 회차 분산](docs/img/plan/v3-3-1-spread.png)
+<img width="1100" height="460" alt="v3-3-1-spread" src="https://github.com/user-attachments/assets/04e0573f-95dc-4058-920e-d2525319032a" />
+<img width="1100" height="460" alt="v3-3-1-hot" src="https://github.com/user-attachments/assets/76cbcc89-7d78-4183-bf7b-865bf05c286c" />
 
-![미처리 만료 대상 수 — 한 인기 회차 집중](docs/img/plan/v3-3-1-hot.png)
 
 **② 다중 워커**
 
-테스트 시나리오: 만료된 예약 10만 건을 워커 1 · 2 · 4개가 나눠 처리. 만료 대상을 여러 회차 분산 / 한 인기 회차 집중으로 놓고 각각 측정
+테스트 시나리오: 만료된 예약 10만 건을 워커 1, 2, 4개가 나눠 처리. 만료 대상을 여러 회차 분산 / 한 인기 회차 집중으로 놓고 각각 측정
 
 **여러 회차 분산**
 
@@ -729,18 +730,19 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 2 | 5.9 | 17,007 | 0 |
 | 4 | 6.0 | 16,728 | 0 |
 
-![워커 수별 초당 처리 건수](docs/img/plan/v3-3-2-workers.png)
+<img width="700" height="420" alt="v3-3-2-workers" src="https://github.com/user-attachments/assets/aaf93aaf-c713-40b1-90d5-b2a2066cb4b8" />
 
 **③ 장애 후 재처리**
 
 테스트 시나리오: 여러 회차에 분산된 만료 예약 10만 건을 처리하는 도중 앱을 강제 종료하고 다시 켬 (결제 만료 스케줄러 5초 주기)
 
-| 구분 | 복구 시간 (재기동 후 미처리 0건까지, 초) | 만료 누락 | 좌석 중복 반환 |
+| 구분 | 복구 시간 | 만료 누락 | 좌석 중복 반환 |
 |---|---:|---:|---:|
 | 도입 전 | 435.2 | 0 | 0 |
 | 도입 후 | 17.6 | 0 | 0 |
 
-![강제 종료 앞뒤 단계별 시간](docs/img/plan/v3-3-3-restart.png)
+<img width="760" height="420" alt="v3-3-3-restart" src="https://github.com/user-attachments/assets/1b707092-799b-4a32-97f3-a726c01a7718" />
+
 
 **성능 개선 요약**
 - **① 청크 처리 · 청크 단위 트랜잭션**
@@ -758,7 +760,7 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 
 ---
 
-## 10. 예약 정합성 — 멱등성과 장애 복구 (상태 조건 UPDATE · 정원 재동기화 · Transactional Outbox)
+## 10. 예약 정합성 — 멱등성과 장애 복구 (상태 조건 UPDATE, 정원 재동기화, Transactional Outbox)
 
 **문제 원인**
 - 기존 코드는 잠그기 전에 읽어 둔 상태로 취소 여부를 판단해, 같은 예약에 취소 10건이 동시에 들어오자 이미 취소된 예약의 좌석을 847번 더 돌려줬습니다.
@@ -778,39 +780,42 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 
 테스트 시나리오: 확정된 예약 1,000건마다 같은 취소 요청을 10건씩, 다른 확정 예약 1,000건마다 같은 체크인 요청을 10건씩 동시에 보냄
 
-| 구분 | 표본 수 | p95 (ms) | p99 (ms) | 오류 % | 좌석 중복 반환 건수 (취소) | 중복 체크인 성공 건수 (체크인) | 미복구 불일치 건수 |
+| 구분 | 표본 수 | p95 (ms) | p99 (ms) | 오류 % | 좌석 중복 반환 건수 | 중복 체크인 성공 건수 | 미복구 불일치 건수 |
 |---|---:|---:|---:|---:|---:|---:|---:|
 | 도입 전 | 20,000 | 1,542.0 | 3,103.7 | 0.00 | 847 | 0 | 847 |
 | 도입 후 | 20,000 | 277.7 | 394.2 | 0.00 | 0 | 0 | 0 |
 
-![취소 · 체크인 응답 시간 백분위](docs/img/plan/v3-4-1-latency.png)
+<img width="1100" height="500" alt="v3-4-1-latency" src="https://github.com/user-attachments/assets/5e571fc2-0db0-4977-bdf4-76ebdaba1ca6" />
+
 
 **② 결제 확정과 만료의 경쟁**
 
-테스트 시나리오: 결제 대기 예약 1,000건에 결제 확정과 만료를 같은 순간에 실행 (확정은 결제 승인 뒤의 예약 확정 단계)
+테스트 시나리오: 결제 대기 예약 1,000건에 결제 확정과 만료를 같은 순간에 실행
 
 | 구분 | 경쟁 건수 | 확정으로 끝남 | 만료로 끝남 | 상태 · 좌석 불일치 건수 | 확정 처리 p99 (ms) |
 |---|---:|---:|---:|---:|---:|
 | 도입 전 | 1,000 | 1,000 | 0 | 0 | 27.1 |
 | 도입 후 | 1,000 | 8 | 992 | 0 | 13.7 |
 
-![결제 확정과 만료 경쟁 결과](docs/img/plan/v3-4-2-race.png)
+<img width="1100" height="260" alt="v3-4-2-race" src="https://github.com/user-attachments/assets/f785557c-bbf9-49fb-b051-461d18f524e8" />
+
 
 **③ 장애 후 정원 대사**
 
-테스트 시나리오: 예약 요청 초당 400건이 걸린 중에 장애를 일으키고, 장애가 끝난 뒤 4분 동안 Redis 정원과 DB 정원이 같아지는지 관찰 (재동기화는 운영 주기 1분)
+테스트 시나리오: 예약 요청 초당 400건이 걸린 중에 장애를 일으키고, 장애가 끝난 뒤 4분 동안 Redis 정원과 DB 정원이 같아지는지 관찰
 
-| 장애 | 장애 직후 불일치 회차 수 (도입 전 / 도입 후) | 도입 전 (재동기화 없음) 4분 뒤 불일치 회차 수 | 도입 후 (재동기화) 복구 시간 (초) | 도입 후 4분 뒤 불일치 회차 수 |
+| 장애 | 장애 직후 불일치 회차 수 (도입 전 / 도입 후) | 도입 전 불일치 회차 수 | 도입 후 복구 시간 (초) | 도입 후 불일치 회차 수 |
 |---|---:|---:|---:|---:|
 | 앱 강제 종료 | 2 / 14 | 0 | 96.3 | 0 |
 | Redis 데이터 유실 | 100,017 / 100,017 | 100,017 | 175.3 | 0 |
 | Redis 강제 종료 후 재시작 | 11,939 / 12,016 | 11,939 | 114.1 | 0 |
 
-![정원 대사 — 앱 강제 종료](docs/img/plan/v3-4-3-app.png)
+<img width="1000" height="500" alt="v3-4-3-app" src="https://github.com/user-attachments/assets/5e257597-0189-4adb-8232-7d9a6adeb3f8" />
 
-![정원 대사 — Redis 데이터 유실](docs/img/plan/v3-4-3-flush.png)
+<img width="1000" height="500" alt="v3-4-3-flush" src="https://github.com/user-attachments/assets/0ce95607-58db-415a-a23e-c6b0b1a499e0" />
 
-![정원 대사 — Redis 강제 종료 후 재시작](docs/img/plan/v3-4-3-rediskill.png)
+<img width="1000" height="500" alt="v3-4-3-rediskill" src="https://github.com/user-attachments/assets/fa9eadf5-2f07-4ffe-97b6-df09578eac51" />
+
 
 **④ 좌석 반환 Outbox**
 
@@ -818,14 +823,15 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 
 그래프: Redis 연결이 끊긴 동안 쌓였다가 재연결 뒤 줄어드는 미처리 이벤트 수(도입 후), Redis와 DB가 어긋난 좌석 수(도입 전 · 도입 후)
 
-| 구분 | 취소 요청 | 미처리 이벤트 최대 | 전달 지연 p99 (정상 구간 / 끊긴 동안 생긴 이벤트) | 복구 시간 (재연결 뒤, 초) | 중복 효과 (두 번 반영된 좌석) | 미복구 불일치 (사라진 좌석 반환) | 취소 응답 p95 / p99 (ms) | 오류 % |
+| 구분 | 취소 요청 | 미처리 이벤트 최대 | 전달 지연 p99 (정상 구간 / 끊긴 동안 생긴 이벤트) | 복구 시간 (초) | 중복 효과 | 미복구 불일치 | 취소 응답 p95 / p99 (ms) | 오류 % |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | 도입 전 | 1,000 | — | — | 복구 안 됨 | 0 | 350석 (회차 5개) | 4,613.2 / 4,733.2 | 0.00 |
 | 도입 후 | 1,000 | 593 | 25.0 ms / 11,658.3 ms | 0.28 | 0 | 0 | 31.8 / 110.9 | 0.00 |
 
-![Outbox 미처리 이벤트 수](docs/img/plan/v3-4-4-pending.png)
+<img width="1100" height="500" alt="v3-4-4-pending" src="https://github.com/user-attachments/assets/4976c242-5e31-45c0-941c-f7c8f48ab20c" />
 
-![Redis와 DB가 어긋난 좌석 수](docs/img/plan/v3-4-4-drift.png)
+<img width="1100" height="500" alt="v3-4-4-drift" src="https://github.com/user-attachments/assets/ede65cab-5837-4a17-9cf9-5086ffa96c2b" />
+
 
 **성능 개선 요약**
 - **① 예약 상태 전이 멱등성**
@@ -867,7 +873,8 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 |---:|---:|---:|---:|
 | 10,000 | 188.5 | 0.00 | 94.53 |
 
-![대기열 없이 누적 처리한 요청 · 과부하 거절](docs/img/plan/v3-5-1-burst.png)
+<img width="1100" height="500" alt="v3-5-1-burst" src="https://github.com/user-attachments/assets/cac47191-6a7a-431f-aef3-df7ee97267a6" />
+
 
 **② 대기열 — 도입 전후 비교**
 
@@ -878,9 +885,10 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 | 도입 전 | 100 | 3,735 | 3,155 | 3,441 | 51 | — | — | 3,154 | 0.00 | — | — | — | — | — | — | — |
 | 도입 후 | 100 | 536 | 232 | 494 | 0 | 232 | 494 | 0 | 0.00 | 2,831.3 | 0 | 0 | 2,289.7 | 2,567.2 | 1,110.5 | 1,516.4 |
 
-![누적 예약 완료 수](docs/img/plan/v3-5-2-done.png)
+<img width="1100" height="500" alt="v3-5-2-done" src="https://github.com/user-attachments/assets/3868ba08-1c56-42f1-9348-10c06478659e" />
 
-![순서 앞 k명 중 예약 성공 수](docs/img/plan/v3-5-2-order.png)
+<img width="1100" height="500" alt="v3-5-2-order" src="https://github.com/user-attachments/assets/b1850e11-d310-4d65-91f6-e0d4fe66f114" />
+
 
 **③ 대기열 접수 · 정합성 — 도입 후**
 
@@ -890,7 +898,8 @@ Actuator Health Check가 정상화되었고 ALB Target 역시 **Healthy** 상태
 |---:|---:|---:|
 | 2,831.3 | 0 | 0 |
 
-![대기열 누적 접수](docs/img/plan/v3-5-3-intake.png)
+<img width="1100" height="500" alt="v3-5-3-intake" src="https://github.com/user-attachments/assets/2de87008-4488-442a-b3b9-bcc3d07ff75b" />
+
 
 **성능 개선 요약**
 - **① 대기열 적용 근거**
