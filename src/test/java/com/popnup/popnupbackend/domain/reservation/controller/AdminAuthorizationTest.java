@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.popnup.popnupbackend.domain.reservation.service.ReservationBookingService;
 import com.popnup.popnupbackend.domain.reservation.service.ReservationService;
 import com.popnup.popnupbackend.domain.schedule.service.ScheduleService;
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ class AdminAuthorizationTest {
 
   @Autowired private WebApplicationContext context;
   @MockitoBean private ScheduleService scheduleService;
+  @MockitoBean private ReservationBookingService reservationBookingService;
   @MockitoBean private ReservationService reservationService;
 
   private MockMvc mockMvc;

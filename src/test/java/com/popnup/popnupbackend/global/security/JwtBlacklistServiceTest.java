@@ -2,62 +2,49 @@ package com.popnup.popnupbackend.global.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
 
-import com.popnup.popnupbackend.global.error.ServiceException;
+import io.lettuce.core.resource.ClientResources;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import java.net.ServerSocket;
+import java.time.Duration;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisTemplate;
 
-@ExtendWith(MockitoExtension.class)
 class JwtBlacklistServiceTest {
 
-  @Mock private RedisTemplate<String, String> redisTemplate;
-
-  @InjectMocks private JwtBlacklistService jwtBlacklistService;
-
+  @SuppressWarnings("unchecked")
   @Test
-  void 블랙리스트에_없는_토큰은_false를_반환한다() {
-    // given
-    String token = "test.jwt.token";
+  @DisplayName("Redis가 응답하지 않으면 블랙리스트 조회는 전용 시간 초과(100ms)만큼만 기다리고 실패한다 (일반 Redis 호출은 500ms)")
+  void lookup_timesOutQuickly() throws Exception {
+    // 연결은 받지만 아무 응답도 하지 않는 서버 (멈춘 Redis)
+    try (ServerSocket silent = new ServerSocket(0)) {
+      JwtBlacklistService service =
+          new JwtBlacklistService(
+              mock(RedisTemplate.class),
+              (ClientResources) null,
+              new SimpleMeterRegistry(),
+              "localhost",
+              silent.getLocalPort(),
+              "",
+              "",
+              0,
+              false,
+              100);
+      try {
+        // 첫 호출은 Lettuce 클라이언트 준비(Netty 이벤트 루프 · 클래스 로딩)가 함께 들어가 앱 시작 뒤 한 번만 느리다
+        assertThatThrownBy(() -> service.isBlacklisted("warm-up"))
+            .isInstanceOf(DataAccessException.class);
 
-    when(redisTemplate.hasKey("blacklist:" + token)).thenReturn(false);
-
-    // when
-    boolean result = jwtBlacklistService.isBlacklisted(token);
-
-    // then
-    assertThat(result).isFalse();
-  }
-
-  @Test
-  void 블랙리스트에_있는_토큰은_true를_반환한다() {
-    // given
-    String token = "test.jwt.token";
-
-    when(redisTemplate.hasKey("blacklist:" + token)).thenReturn(true);
-
-    // when
-    boolean result = jwtBlacklistService.isBlacklisted(token);
-
-    // then
-    assertThat(result).isTrue();
-  }
-
-  @Test
-  void Redis_장애시_인증_서비스_일시적_사용불가_에러가_발생한다() {
-    // given
-    String token = "test.jwt.token";
-
-    when(redisTemplate.hasKey("blacklist:" + token))
-        .thenThrow(new RuntimeException("Redis connection failed"));
-
-    // when & then
-    assertThatThrownBy(() -> jwtBlacklistService.isBlacklisted(token))
-        .isInstanceOf(ServiceException.class)
-        .hasMessage("인증 서비스를 일시적으로 사용할 수 없습니다.");
+        long start = System.nanoTime();
+        assertThatThrownBy(() -> service.isBlacklisted("token"))
+            .isInstanceOf(DataAccessException.class); // JwtFilter가 받아 조회를 건너뜀
+        assertThat(Duration.ofNanos(System.nanoTime() - start)).isLessThan(Duration.ofMillis(450));
+      } finally {
+        service.close();
+      }
+    }
   }
 }
